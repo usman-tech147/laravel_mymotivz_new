@@ -1,0 +1,8 @@
+apps:
+  - name: Scheduler
+    script: artisan
+    interpreter: php
+    "restart_delay": 1000,
+    args:
+      - schedule:run
+
