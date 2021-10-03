@@ -8,7 +8,7 @@ use App\Job;
 use Illuminate\Auth\Access\HandlesAuthorization;
 use Illuminate\Support\Facades\Auth;
 
-class JobPolicy
+class user_job
 {
     use HandlesAuthorization;
 

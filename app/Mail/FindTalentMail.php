@@ -1,6 +1,6 @@
 <?php
 
-namespace App\mail;
+namespace App\Mail;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Bus\Queueable;
