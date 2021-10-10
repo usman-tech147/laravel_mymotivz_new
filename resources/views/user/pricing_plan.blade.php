@@ -30,7 +30,7 @@
                                                 <li>Dashboard Access & Hiring Tools</li>
                                                 <li>Customer Support</li>
                                             </ul>
-                                            <a href="#" class="priicing-btn">PURCHASE</a>
+                                            <a href="{{route('payment.details')}}" class="priicing-btn">PURCHASE</a>
                                         </section>
                                     </div>
                                 </li>
@@ -48,7 +48,7 @@
                                                 <li>+Add Team Members</li>
                                                 <li>Customer Support</li>
                                             </ul>
-                                            <a href="#" class="priicing-btn">PURCHASE</a>
+                                            <a href="{{route('payment.details')}}" class="priicing-btn">PURCHASE</a>
                                         </section>
                                     </div>
                                 </li>
@@ -66,7 +66,7 @@
                                                 <li>+Add Team Members</li>
                                                 <li>Customer Support</li>
                                             </ul>
-                                            <a href="#" class="priicing-btn">PURCHASE</a>
+                                            <a href="{{route('payment.details')}}" class="priicing-btn">PURCHASE</a>
                                         </section>
                                     </div>
                                 </li>
@@ -89,7 +89,7 @@
                         <div class="about-text pricing-about">
                             <h2>NEED TO POST MORE THAN 10 JOBS? WE’VE GOT YOU COVERED</h2>
                             <p>Our Next Level package is tailored to your company needs which includes all feature for a unique low cost.</p>
-                            <a href="/contact" class="simple-btn">CONTACT US FOR PRICING</a>
+                            <a href="{{route('contact')}}" class="simple-btn">CONTACT US FOR PRICING</a>
                         </div>
                     </div>
                 </div>
@@ -122,15 +122,15 @@
                                 <div class="about-text pricing-about">
                                     <h2>STILL NOT SURE?</h2>
                                     <p>No problem. You have questions and we have answers. Contact us today for further assistance.</p>
-                                    <a href="/contact" class="simple-btn">LET’S TALK</a>
+                                    <a href="{{route('contact')}}" class="simple-btn">LET’S TALK</a>
                                 </div>
                             </div>
                         </div>
                     </div>
                     <div class="col-md-6">
                         <figure class="career-development-img" style="margin: 0px;"><img
-                                src="{{asset('user/images/career-development-img1.jpg')}}" alt=""><img
-                                class="secnd-img" src="{{asset('user/images/career-development-img.jpg')}}" alt="">
+                                    src="{{asset('user/images/career-development-img1.jpg')}}" alt=""><img
+                                    class="secnd-img" src="{{asset('user/images/career-development-img.jpg')}}" alt="">
                         </figure>
                     </div>
                 </div>

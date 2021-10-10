@@ -46,7 +46,7 @@
 <div class="app-container app-theme-white body-tabs-shadow fixed-header fixed-sidebar">
     <div class="app-header">
         <div class="app-header__logo">
-            <a href="{{route('welcome')}}" class="logo-src"></a>
+            <a href="{{route('employer.welcome')}}" class="logo-src"></a>
             <div class="header__pane ml-auto">
                 <div>
                     <button type="button" class="hamburger close-sidebar-btn hamburger--elastic"
@@ -164,11 +164,11 @@
             buttons: ["Cancel", "Confirm"],
             dangerMode: true,
         }).then((willDelete) => {
-                if (willDelete) {
-                    window.location.href = "{{ route('delete.company.account')}}";
-                }
+            if (willDelete) {
+                window.location.href = "{{ route('delete.company.account')}}";
+            }
 
-            });
+        });
 
     }
 </script>

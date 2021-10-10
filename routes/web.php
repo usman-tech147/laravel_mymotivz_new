@@ -28,7 +28,13 @@ Route::get('/company/profile-template', function () {
 //    return view('user.welcome');
 //})->name('welcome');
 Route::get('/', [HomeController::class, 'welcome'])->name('welcome');
-Route::get('/change/{slug}', [HomeController::class, 'change'])->name('change');
+// employer welcome page
+Route::get('/employer/home', [HomeController::class, 'employerWelcome'])->name('employer.welcome');
+
+Route::get('/pricing-plan',[HomeController::class, 'pricingPlans'])->name('pricing.details');
+Route::get('/payment-details', [HomeController::class, 'paymentDetails'])->name('payment.details');
+
+//Route::get('/change/{slug}', [HomeController::class, 'change'])->name('change');
 
 Route::get('/company-dashboard', function () {
     return view('layouts.company');
@@ -266,16 +272,18 @@ Route::get('/test', function () {
 
 //Route::post('post/ckeditor/upload', 'mailController@upload_image_cke')->name('ckeditor.upload');
 
-Route::get('employeer/homepage', function (){
-    return view('user.employeer_welcome');
-});
+//new routes
+//Route::get('employeer/homepage', function (){
+//    return view('user.employeer_welcome');
+//});
 
-Route::get('employeer/pricing-plan', function (){
-    return view('user.pricing_plan');
-});
-Route::get('employeer/payment', function (){
-    return view('user.payment');
-});
+//Route::get('employeer/pricing-plan', function (){
+//    return view('user.pricing_plan');
+//});
+
+//Route::get('employeer/payment', function (){
+//    return view('user.payment');
+//});
 Route::get('employeer/view-job-details', function (){
     return view('user.view_job_details');
 });
@@ -291,7 +299,7 @@ Route::get('employeer/orders-history', function (){
 Route::get('employeer/post-job/', function (){
     return view('user.employeer_post_job');
 });
-// new
+
 Route::get('employeer/job-qualification/', function (){
     return view('user.employeer_job_qualification');
 });
@@ -305,6 +313,3 @@ Route::get('employeer/personal-details/', function (){
     return view('user.employeer_personal_details');
 });
 
-
-
-Route::get('package-details',[HomeController::class, 'packageDetails'])->name('package.details');

@@ -25,8 +25,6 @@
     <script type="text/javascript"
             src="https://maps.googleapis.com/maps/api/js?key={{env("GOOGLE_API")}}&libraries=places"></script>
     <script async src="{{asset('google-map.js')}}"></script>
-
-
 </head>
 <body>
 
@@ -39,73 +37,99 @@
         <div class="container-fluid">
             <div class="row">
                 <div class="col-md-9">
-                    <a href="{{ route('welcome') }}" class="logo"><img src="{{ asset('user/images/logo.png') }}" alt=""></a>
+                    @if(session()->has('status'))
+                        <a href="{{ route('employer.welcome') }}" class="logo">
+                            <img src="{{ asset('user/images/logo.png') }}" alt="">
+                        </a>
+                    @else
+                        <a href="{{ route('welcome') }}" class="logo">
+                            <img src="{{ asset('user/images/logo.png') }}" alt="">
+                        </a>
+                    @endif
+
                     <div class="mymotivz-nav">
                         <nav class="navbar navbar-expand-lg">
                             <div class="collapse navbar-collapse" id="navbarSupportedContent">
                                 <ul class="navbar-nav mr-auto">
-
                                     @if(Session::get('status') == 1 || Session::has('c_email'))
-                                        <li class="nav-item"><a href="{{ route('user.recruiting.services') }}"
-                                                                class="nav-link @if(Route::currentRouteName()=='user.recruiting.services') active @endif">Recruiting
-                                                Services </a></li>
-                                        <li class="nav-item"><a href="{{ route('user.direct.placement') }}"
-                                                                class="nav-link @if(Route::currentRouteName()=='user.direct.placement') active @endif">Direct
-                                                Placement </a></li>
-                                        <li class="nav-item"><a href="{{ route('user.temporary.staffing') }}"
-                                                                class="nav-link @if(Route::currentRouteName()=='user.temporary.staffing') active @endif">Temporary
-                                                Staffing </a></li>
-                                        <li class="nav-item"><a href="http://www.mymotivz2.development-env.com/public/blog/"
-                                                                class="nav-link @if(Route::currentRouteName()=='user.industry.insights') active @endif">Industry
-                                                Insights </a></li>
-                                        <!-- <li class="nav-item"><a href="{{ route('user.industry.insights') }}"
-                                                                class="nav-link @if(Route::currentRouteName()=='user.industry.insights') active @endif">Industry
-                                                Insights </a></li> -->
+                                        <li class="nav-item">
+                                            <a href="{{ route('user.recruiting.services') }}"
+                                               class="nav-link @if(Route::currentRouteName()=='user.recruiting.services') active @endif">
+                                                Recruiting Services
+                                            </a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a href="{{ route('user.direct.placement') }}"
+                                               class="nav-link @if(Route::currentRouteName()=='user.direct.placement') active @endif">
+                                                Direct Placement
+                                            </a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a href="{{ route('user.temporary.staffing') }}"
+                                               class="nav-link @if(Route::currentRouteName()=='user.temporary.staffing') active @endif">
+                                                Temporary Staffing
+                                            </a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a href="http://www.blog.mymotivz2.development-env.com/"
+                                               class="nav-link @if(Route::currentRouteName()=='user.industry.insights') active @endif">
+                                                Industry Insights
+                                            </a>
+                                        </li>
                                         @if(session()->has('c_email'))
                                         @else
-                                            <li class="nav-item"><a href="{{route('user.signUp.company')}}"
-                                                                    class="nav-link @if(Route::currentRouteName()=='user.signUp.company') active @endif">Create
-                                                    Company Profile </a></li>
+                                            <li class="nav-item">
+                                                <a href="{{route('user.signUp.company')}}"
+                                                   class="nav-link @if(Route::currentRouteName()=='user.signUp.company') active @endif">
+                                                    Create Company Profile
+                                                </a>
+                                            </li>
                                         @endif
-
-
                                     @elseif(!Session::has('status') || Session::has('candidate_id'))
-
-
-                                        <li class="nav-item"><a href="{{ route('user.find.jobs') }}"
-                                                                class="nav-link @if(Route::currentRouteName()=='user.find.jobs') active @endif">Find
-                                                Jobs </a></li>
-                                        <li class="nav-item"><a href="{{route('view.career.develop')}}"
-                                                                class="nav-link @if(Route::currentRouteName()=='view.career.develop') active @endif">Career
-                                                Development </a></li>
-                                        <li class="nav-item"><a href="http://www.mymotivz2.development-env.com/public/blog/"
-                                                                class="nav-link @if(Route::currentRouteName()=='user.career.resources') active @endif">Career
-                                                Resources </a></li>
-                                                <!-- <li class="nav-item"><a href="{{route('user.career.resources')}}"
-                                                                class="nav-link @if(Route::currentRouteName()=='user.career.resources') active @endif">Career
-                                                Resources </a></li> -->
-
-
+                                        <li class="nav-item">
+                                            <a href="{{ route('user.find.jobs') }}"
+                                               class="nav-link @if(Route::currentRouteName()=='user.find.jobs') active @endif">
+                                                Find Jobs
+                                            </a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a href="{{route('view.career.develop')}}"
+                                               class="nav-link @if(Route::currentRouteName()=='view.career.develop') active @endif">
+                                                Career Development
+                                            </a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a href="http://www.blog.mymotivz2.development-env.com/"
+                                               class="nav-link @if(Route::currentRouteName()=='user.career.resources') active @endif">
+                                                Career Resources
+                                            </a>
+                                        </li>
                                         @if(session()->has('email'))
-                                            <li class="nav-item"><a class="nav-link"
-                                                                    href="{{route('candidate.dashboard')}}">
+                                            <li class="nav-item">
+                                                <a class="nav-link" href="{{route('candidate.dashboard')}}">
                                                     Resume & Cover Letters
                                                 </a>
                                             </li>
                                         @else
-                                            <li class="nav-item"><a class="nav-link" href="{{route('user.signUp')}}">Resume
-                                                    & Cover Letters</a></li>
-                                            {{--<li ><a href="{{route('user.signUp')}}" class="@if(Route::currentRouteName()=='user.signUp') active @endif">Create User Profile </a></li>--}}
-                                        @endif                                    @endif
-
-
-                                    <li class="nav-item "><a
-                                            class="nav-link @if(Route::currentRouteName()=='about.us') active @endif"
-                                            href="{{ route('about.us') }}">About Us</a></li>
-                                    <li class="nav-item "><a
-                                            class="nav-link @if(Route::currentRouteName()=='contact') active @endif"
-                                            href="{{ route('contact') }}">Contacts</a></li>
-
+                                            <li class="nav-item">
+                                                <a class="nav-link" href="{{route('user.signUp')}}">
+                                                    Resume & Cover Letters
+                                                </a>
+                                            </li>
+                                        @endif
+                                    @endif
+                                    <li class="nav-item ">
+                                        <a class="nav-link @if(Route::currentRouteName()=='about.us') active @endif"
+                                           href="{{ route('about.us') }}">
+                                            About Us
+                                        </a>
+                                    </li>
+                                    <li class="nav-item ">
+                                        <a class="nav-link @if(Route::currentRouteName()=='contact') active @endif"
+                                           href="{{ route('contact') }}">
+                                            Contacts
+                                        </a>
+                                    </li>
                                     @if( session()->has('email') || session()->has('c_email') )
                                         <li class="nav-item dropdown userdshoard dis-none">
                                             <a class="nav-link dropdown-toggle" href="javascript:void(0)"
@@ -121,26 +145,9 @@
                                                          src="@if(Session::get('c_email.logo')!=''){{ asset('user/company_logo/'.Session('c_email.logo') )  }} @else {{ asset('/user/images/avatar1.png') }} @endif"
                                                          alt=""> @if (Session::get('c_email.name')!=''){{session()->get('company_name')}} @else
                                                         Company @endif
-
                                                 @endif
                                             </a>
-                                            <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                                                @if(Session::has('candidate_id'))
-                                                    <a class="dropdown-item"
-                                                       href="{{route('new.candidate.dashboard')}}">Dashboard</a>
-                                                    <div class="dropdown-divider"></div>
-                                                    <a class="dropdown-item" href="javascript:void(0)"
-                                                       onclick="candidateAccDel()">Delete Account</a>
-                                                @elseif(Session::has('c_email'))
-                                                    <a class="dropdown-item" href="{{route('company.dashboard')}}">Dashboard</a>
-                                                    <div class="dropdown-divider"></div>
-                                                    <a class="dropdown-item" href="javascript:void(0)"
-                                                       onclick="companyAccDel()">Delete Account</a>
-                                                @endif
-
-                                                <div class="dropdown-divider"></div>
-                                                <a class="dropdown-item" href="{{ route('user.logout') }}">Logout</a>
-                                            </div>
+                                            {{--                                            c1 dashbard missing part in dummy.blade.php--}}
                                         </li>
                                     @else
                                         <li class="nav-item dis-none">
@@ -168,32 +175,36 @@
                                                              src="@if(Session::get('cand_prof_img')!=''){{ asset('/uploads/Candidate_Profile_Images/'.Session('cand_prof_img')) }} @else {{ asset('/user/images/avatar1.png') }} @endif"
                                                              alt=""> @if (Session::get('candidate_name')!=''){{session()->get('candidate_name')}} @else
                                                             User @endif
-
                                                     @elseif(Session::has('c_email'))
                                                         <img class="company_prof_logo"
                                                              src="@if(Session::get('c_email.logo')!=''){{ asset('user/company_logo/'.Session('c_email.logo') )  }} @else {{ asset('/user/images/avatar1.png') }} @endif"
                                                              alt=""> @if (Session::get('c_email.name')!=''){{session()->get('company_name')}} @else
                                                             Company @endif
 
-                                                    @endif                            </a>
+                                                    @endif
+                                                </a>
                                                 <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-
                                                     @if(Session::has('candidate_id'))
                                                         <a class="dropdown-item"
                                                            href="{{route('new.candidate.dashboard')}}">Dashboard</a>
                                                         <div class="dropdown-divider"></div>
                                                         <a class="dropdown-item" href="javascript:void(0)"
-                                                           onclick="candidateAccDel()">Delete Account</a>
+                                                           onclick="candidateAccDel()">
+                                                            Delete Account
+                                                        </a>
                                                     @elseif(Session::has('c_email'))
                                                         <a class="dropdown-item" href="{{route('company.dashboard')}}">Dashboard</a>
                                                         <div class="dropdown-divider"></div>
                                                         <a class="dropdown-item" href="javascript:void(0)"
-                                                           onclick="companyAccDel()">Delete Account</a>
-
+                                                           onclick="companyAccDel()">
+                                                            Delete Account
+                                                        </a>
                                                     @endif
                                                     <div class="dropdown-divider"></div>
                                                     <a class="dropdown-item"
-                                                       href="{{ route('user.logout') }}">Logout</a>
+                                                       href="{{ route('user.logout') }}">
+                                                        Logout
+                                                    </a>
                                                 </div>
                                             </div>
                                         @else
@@ -203,24 +214,27 @@
                                     @if(!Session::has('candidate_id') && !Session::has('c_email'))
                                         <li class="nav-item">
                                             @if(Session::get('status') == 1)
-                                                <a class="nav-link" href="{{route('change',['slug'=>'Job Seekers'])}}">For
-                                                    Job Seekers</a>
+                                                {{--                                                <a class="nav-link" href="{{route('change',['slug'=>'Job Seekers'])}}">--}}
+                                                {{--                                                    For Job Seekers--}}
+                                                {{--                                                </a>--}}
+                                                <a class="nav-link" href="{{route('welcome')}}">
+                                                    For Job Seekers
+                                                </a>
                                             @else
-                                                <a class="nav-link" href="{{route('change',['slug'=>'Employers'])}}">For Employers</a>
-{{--                                                <a class="nav-link" href="{{route('employer-front',['slug'=>'Employers'])}}">For Employers</a>--}}
+                                                {{--                                                <a class="nav-link" href="{{route('change',['slug'=>'Employers'])}}">--}}
+                                                {{--                                                    For Employers--}}
+                                                {{--                                                </a>--}}
+
+                                                <a class="nav-link" href="{{route('employer.welcome')}}">
+                                                    For Employers
+                                                </a>
+
                                             @endif
-                                            {{--                                        <a class="nav-link" href="javascript:void(0)">For Job Seekers</a>--}}
                                         </li>
                                     @endif
-                                    {{--                                        @if(Session::has('status'))--}}
                                     @if(Session::has('c_email') || (!Session::has('candidate_id') && !Session::has('c_email')))
-{{--                                        <li>--}}
-{{--                                            <a href="{{route('user.client.job.post')}}" class="header-btn">--}}
-{{--                                                Post a Job--}}
-{{--                                            </a>--}}
-{{--                                        </li>--}}
                                         <li>
-                                            <a href="{{route('package.details')}}" class="header-btn">
+                                            <a href="{{route('pricing.details')}}" class="header-btn">
                                                 Post a Job
                                             </a>
                                         </li>
@@ -236,148 +250,14 @@
     <header class="motivz-header-two" style="display: none;">
         <div class="container-fluid">
             <div class="row">
-                <div class="col-md-3"><a href="{{ route('welcome') }}" class="logo"><img
-                            src="{{ asset('user/images/logo.png') }}" alt=""></a></div>
+                <div class="col-md-3">
+                    <a href="{{ route('welcome') }}" class="logo">
+                        <img src="{{ asset('user/images/logo.png') }}" alt="">
+                    </a>
+                </div>
                 <div class="col-md-9">
-                    <div class="mymotivz-nav">
-                        <nav class="navbar navbar-expand-lg">
-                            <button class="navbar-toggler" type="button" data-toggle="collapse"
-                                    data-target="#navbarSupported" aria-controls="navbarSupported" aria-expanded="false"
-                                    aria-label="Toggle navigation">
-                                <span class="fa fa-bars"></span>
-                            </button>
-                            <div class="collapse navbar-collapse" id="navbarSupported">
-                                <ul class="navbar-nav mr-auto">
-                                    @if(Session::get('status') == 1 || Session::has('c_email'))
-                                        <li class="nav-item"><a href="{{ route('user.recruiting.services') }}"
-                                                                class="nav-link @if(Route::currentRouteName()=='user.recruiting.services') active @endif">Recruiting
-                                                Services </a></li>
-                                        <li class="nav-item"><a href="{{ route('user.direct.placement') }}"
-                                                                class="nav-link @if(Route::currentRouteName()=='user.direct.placement') active @endif">Direct
-                                                Placement </a></li>
-                                        <li class="nav-item"><a href="{{ route('user.temporary.staffing') }}"
-                                                                class="nav-link @if(Route::currentRouteName()=='user.temporary.staffing') active @endif">Temporary
-                                                Staffing </a></li>
-                                        <li class="nav-item"><a href="http://www.mymotivz2.development-env.com/public/blog/"
-                                                                class="nav-link @if(Route::currentRouteName()=='user.industry.insights') active @endif">Industry
-                                                Insights </a></li>
-                                                <!-- <li class="nav-item"><a href="{{ route('user.industry.insights') }}"
-                                                                class="nav-link @if(Route::currentRouteName()=='user.industry.insights') active @endif">Industry
-                                                Insights </a></li> -->
-                                        @if(session()->has('c_email'))
-                                        @else
-                                            <li class="nav-item"><a href="{{route('user.signUp.company')}}"
-                                                                    class="nav-link @if(Route::currentRouteName()=='user.signUp.company') active @endif">Create
-                                                    Company Profile </a></li>
-                                        @endif
 
-
-                                    @elseif(!Session::has('status') || Session::has('candidate_id'))
-
-
-                                        <li class="nav-item"><a href="{{ route('user.find.jobs') }}"
-                                                                class="nav-link @if(Route::currentRouteName()=='user.find.jobs') active @endif">Find
-                                                Jobs </a></li>
-                                        <li class="nav-item"><a href="{{route('view.career.develop')}}"
-                                                                class="nav-link @if(Route::currentRouteName()=='view.career.develop') active @endif">Career
-                                                Development </a></li>
-                                        <li class="nav-item"><a href="http://www.mymotivz2.development-env.com/public/blog/"
-                                                                class="nav-link @if(Route::currentRouteName()=='user.career.resources') active @endif">Career
-                                                Resources </a></li>
-
-
-                                        @if(session()->has('email'))
-                                            <li class="nav-item"><a class="nav-link"
-                                                                    href="{{route('candidate.dashboard')}}">Resume &
-                                                    Cover
-                                                    Letter</a></li>
-                                        @else
-                                            <li class="nav-item"><a class="nav-link" href="{{route('user.signUp')}}">Resume
-                                                    & Cover Letter</a></li>
-                                            {{--<li ><a href="{{route('user.signUp')}}" class="@if(Route::currentRouteName()=='user.signUp') active @endif">Create User Profile </a></li>--}}
-                                        @endif                                    @endif
-
-
-                                    <li class="nav-item "><a
-                                            class="nav-link @if(Route::currentRouteName()=='about.us') active @endif"
-                                            href="{{ route('about.us') }}">About Us</a></li>
-                                    <li class="nav-item "><a
-                                            class="nav-link @if(Route::currentRouteName()=='contact') active @endif"
-                                            href="{{ route('contact') }}">Contact</a></li>
-
-                                    @if( !session()->has('email') && !session()->has('c_email') )
-                                        <li class="nav-item dis-none">
-                                            <a class="nav-link" href="{{ route('user.login') }}">Sign In</a>
-                                        </li>
-                                    @endif
-                                <!-- <li>
-                                        @if( session()->has('email') || session()->has('c_email') )
-                                        @if(Session::has('candidate_id'))
-                                        <img class="cand_prof_img"
-                                             src="@if(Session::get('cand_prof_img')!=''){{ asset('/uploads/Candidate_Profile_Images/'.Session('cand_prof_img')) }} @else {{ asset('/user/images/avatar1.png') }} @endif"
-                                                         alt=""> @if (Session::get('candidate_name')!=''){{session()->get('candidate_name')}} @else
-                                            User @endif
-
-                                        @elseif(Session::has('c_email'))
-                                        <img class="company_prof_logo"
-                                             src="@if(Session::get('c_email.logo')!=''){{ asset('user/company_logo/'.Session('c_email.logo') )  }} @else {{ asset('/user/images/avatar1.png') }} @endif"
-                                                         alt=""> @if (Session::get('c_email.name')!=''){{session()->get('company_name')}} @else
-                                            Company @endif
-
-                                        @endif                            </a>
-                                            <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-
-                                                @if(Session::has('candidate_id'))
-                                        <a class="dropdown-item"
-                                           href="{{route('new.candidate.dashboard')}}">Dashboard</a>
-                                                    <div class="dropdown-divider"></div>
-                                                    <a class="dropdown-item" href="javascript:void(0)"
-                                                       onclick="candidateAccDel()">Delete Account</a>
-                                                @elseif(Session::has('c_email'))
-                                        <a class="dropdown-item" href="{{route('company.dashboard')}}">Dashboard</a>
-                                                    <div class="dropdown-divider"></div>
-                                                    <a class="dropdown-item" href="javascript:void(0)"
-                                                       onclick="companyAccDel()">Delete Account</a>
-
-                                                @endif
-                                        <div class="dropdown-divider"></div>
-                                        <a class="dropdown-item"
-                                           href="{{ route('user.logout') }}">Logout</a>
-                                            </div>
-                                        </div>
-                                        @else
-                                    <a href="{{ route('user.login') }}" class="nav-link">Sign In</a>
-                                        @endif
-                                    </li> -->
-                                    @if(!Session::has('candidate_id') && !Session::has('c_email'))
-                                        <li class="nav-item">
-                                            @if(Session::get('status') == 1)
-                                                <a class="nav-link" href="{{route('change',['slug'=>'Job Seekers'])}}">For
-                                                    Job Seekers</a>
-                                            @else
-                                                <a class="nav-link" href="{{route('change',['slug'=>'Employers'])}}">For
-                                                    Employers</a>
-                                            @endif
-                                        </li>
-                                    @endif
-                                    @if(Session::has('c_email') || (!Session::has('candidate_id') && !Session::has('c_email')))
-{{--                                        <li>--}}
-                                            {{--                                            <a href="{{route('user.client.job.post')}}" class="header-btn">--}}
-                                            {{--                                                Post a Job--}}
-                                            {{--                                            </a>--}}
-                                            {{--                                        </li>--}}
-
-                                            <li>
-                                                <a href="{{route('package.details')}}" class="header-btn">
-                                                    Post a Job
-                                                </a>
-                                            </li>
-                                    @endif
-                                </ul>
-                            </div>
-                        </nav>
-                    </div>
-
+                    {{--                    missing code in dummy file--}}
                     @if( session()->has('email') || session()->has('c_email') )
                         <div class="dropdown userdshoard">
                             <a class="nav-link dropdown-toggle" href="javascript:void(0)"
@@ -394,26 +274,9 @@
                                          alt=""> @if (Session::get('c_email.name')!='')
                                         <span>{{session()->get('company_name')}}</span> @else
                                         <span>Company</span> @endif
-
                                 @endif
                             </a>
-                            <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                                @if(Session::has('candidate_id'))
-                                    <a class="dropdown-item"
-                                       href="{{route('new.candidate.dashboard')}}">Dashboard</a>
-                                    <div class="dropdown-divider"></div>
-                                    <a class="dropdown-item" href="javascript:void(0)"
-                                       onclick="candidateAccDel()">Delete Account</a>
-                                @elseif(Session::has('c_email'))
-                                    <a class="dropdown-item" href="{{route('company.dashboard')}}">Dashboard</a>
-                                    <div class="dropdown-divider"></div>
-                                    <a class="dropdown-item" href="javascript:void(0)"
-                                       onclick="companyAccDel()">Delete Account</a>
-                                @endif
-
-                                <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="{{ route('user.logout') }}">Logout</a>
-                            </div>
+                            {{--                                            c3 dashbard missing part in dummy.blade.php--}}
                         </div>
                     @endif
 
@@ -515,7 +378,6 @@
                                         <li><a href="{{route('contact')}}">Contact Us</a></li>
                                         <li><a href="/contact/terms-of-use">Terms of Use</a></li>
                                         <li><a href="/contact/privacy-policy">Privacy Policy</a></li>
-                                        {{--                                        <li><a href="{{route('login.post')}}">Employee Login</a></li>--}}
                                         <li><a href="{{route('user.login')}}">Employee Login</a></li>
                                     </ul>
                                 </div>
@@ -545,8 +407,7 @@
                                 <div class="widget widget-links">
                                     <h2 class="foot-title">For Employers</h2>
                                     <ul>
-                                        <li><a href="{{route('package.details')}}">Post a Job </a></li>
-{{--                                        <li><a href="{{route('user.client.job.post')}}">Post a Job </a></li>--}}
+                                        <li><a href="{{route('pricing.details')}}">Post a Job </a></li>
                                         <li><a href="{{route('user.recruiting.services')}}">Recruiting Services </a>
                                         </li>
                                         <li><a href="{{route('user.direct.placement')}}">Direct Placement </a></li>
@@ -563,10 +424,10 @@
                                 <div class="widget widget-links">
                                     <h2 class="foot-title">Blogs</h2>
                                     <ul>
-                                        <li><a href="http://www.mymotivz2.development-env.com/public/blog/">Industry Insights </a></li>
-                                        <!-- <li><a href="{{route('user.industry.insights')}}">Industry Insights </a></li> -->
-                                        <li><a href="http://www.mymotivz2.development-env.com/public/blog/">Career Resources </a></li>
-                                        <!-- <li><a href="{{route('user.career.resources')}}">Career Resources </a></li> -->
+                                        <li><a href="http://www.blog.mymotivz2.development-env.com/">Industry
+                                                Insights </a></li>
+                                        <li><a href="http://www.blog.mymotivz2.development-env.com/">Career
+                                                Resources </a></li>
                                     </ul>
                                 </div>
                             </div>
@@ -578,9 +439,9 @@
                                 <div class="widget widget-links">
                                     <h2 class="foot-title">Mobile App</h2>
                                     <a class="left-icn" href="https://www.apple.com/app-store/" target="_blank"><img
-                                            src="{{ asset('user/images/apple.png') }}" alt=""></a>
+                                                src="{{ asset('user/images/apple.png') }}" alt=""></a>
                                     <a class="right-icn" href="https://play.google.com/store/apps" target="_blank"><img
-                                            src="{{ asset('user/images/google-play.png') }}" alt="lorem ipsum"></a>
+                                                src="{{ asset('user/images/google-play.png') }}" alt="lorem ipsum"></a>
                                     <div class="social-x">
                                         <a href="https://www.facebook.com/" target="_blank" class="fa fa-facebook"></a>
                                         <a href="https://www.instagram.com/" target="_blank"
@@ -649,18 +510,6 @@
         });
     });
 
-    /* function initialize() {
-         var input = document.getElementById('desired-location');
-         var options = {
-             types: ['(regions)'] //this should work !
-         };
-
-         var autocomplete = new google.maps.places.Autocomplete(input, options);
-         autocomplete.setComponentRestrictions(
-             {'country': ['us']});
-     }
-     google.maps.event.addDomListener(window, 'load', initialize);*/
-
     function candidateAccDel() {
         var text = document.createElement('div')
         text.innerHTML = "Once your account is deleted, all of your saved information will be permanently deleted as well. This means you’ll lose access to your profile and account information.<br><ul class='list-style-two'><li><span>Saved resumes</span></li><li><span>Professional Summary</span></li><li><span>Apply history</span></li><li><span>Saved jobs</span></li></ul>"
@@ -674,12 +523,9 @@
 
             .then((willDelete) => {
                 if (willDelete) {
-
                     window.location.href = "{{ route('delete.candidate.account')}}";
                 }
-
             });
-
     }
 
     function companyAccDel() {
@@ -696,7 +542,6 @@
 
             .then((willDelete) => {
                 if (willDelete) {
-
                     window.location.href = "{{ route('delete.company.account')}}";
                 }
 
@@ -704,13 +549,9 @@
 
     }
 
-    /* function ShowJobNotifyPopup(){
-         $("#exampleModal").modal("show");
-     }*/
     $("#form-job-notify").validate({
         ignore: "",
         rules: {},
-        // Specify validation error messages
         messages: {},
 
         submitHandler: function (form) {
@@ -810,22 +651,6 @@
     });
 
     $(document).ready(function () {
-        // function initialize() {
-        //     var input = document.getElementById('location');
-        //     var options = {
-        //         types: ['(regions)'] //this should work !
-        //     };
-        //     var autocomplete = new google.maps.places.Autocomplete(input, options);
-        // }
-        // google.maps.event.addDomListener(window, 'load', initialize);
-        // function initialization() {
-        //     var input = document.getElementById('desired_location_notify');
-        //     var options = {
-        //         types: ['(regions)'] //this should work !
-        //     };
-        //     var autocomplete = new google.maps.places.Autocomplete(input, options);
-        // }
-        // google.maps.event.addDomListener(window, 'load', initialization);
         $("#desired_location_notify").on('keydown keypress keyup', function (event) {
             if (event.keyCode === 13) {
                 event.preventDefault();

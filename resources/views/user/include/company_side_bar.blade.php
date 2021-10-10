@@ -2,7 +2,7 @@
     <div class="app-sidebar__inner">
         <ul class="vertical-nav-menu">
             <li>
-                <a class="@if(Route::currentRouteName()=='company.dashboard')  @endif" href="{{route('welcome')}}">
+                <a class="@if(Route::currentRouteName()=='company.dashboard')  @endif" href="{{route('employer.welcome')}}">
                     <i class="metismenu-icon pe-7s-home"></i>
                     Homepage
                 </a>
@@ -43,10 +43,10 @@
                 </a>
             </li>
             <li>
-{{--                <a class="@if(Route::currentRouteName()=='user.client.view.job.expired') mm-active  @endif" href="{{route('user.client.view.job.expired')}}">--}}
-{{--                    <i class="metismenu-icon pe-7s-shield">--}}
-{{--                    </i>Inactive Jobs--}}
-{{--                </a>--}}
+                {{--                <a class="@if(Route::currentRouteName()=='user.client.view.job.expired') mm-active  @endif" href="{{route('user.client.view.job.expired')}}">--}}
+                {{--                    <i class="metismenu-icon pe-7s-shield">--}}
+                {{--                    </i>Inactive Jobs--}}
+                {{--                </a>--}}
 
                 <a href="#">
                     <i class="metismenu-icon pe-7s-shield"></i>

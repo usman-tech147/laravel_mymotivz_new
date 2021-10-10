@@ -58,9 +58,11 @@ class HomeController extends Controller
 
     public function welcome()
     {
-        if (Session::get('status') == 1 || Session::has('c_email')) {
-            return view('user.test_employeer_welcome');
-        }
+//        if (Session::get('status') == 1 || Session::has('c_email')) {
+//            return view('user.employer_welcome');
+//        }
+//        dd("job seekers welcome page");
+        Session::forget('status');
         return view('user.welcome');
     }
 
@@ -73,6 +75,12 @@ class HomeController extends Controller
         }
         return redirect()->back();
 
+    }
+
+    public function employerWelcome()
+    {
+        session(['status' => 1]);
+        return view('user.employer_welcome');
     }
 
     public function findTalent(Request $request)
@@ -2135,11 +2143,15 @@ class HomeController extends Controller
         return Response::json(['states' => $states]);
     }
 
-    public function packageDetails()
+    public function pricingPlans()
     {
-        return view('user.test_package');
+        return view('user.pricing_plan');
     }
 
+    public function paymentDetails()
+    {
+        return view('user.payment_details');
+    }
 //    public function upload_image_cke(Request $request)
 //    {
 //        if ($request->hasFile('upload')) {
