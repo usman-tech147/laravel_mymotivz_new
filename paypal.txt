@@ -1,0 +1,36 @@
+paypal for developers: 		https://developer.paypal.com/home/
+---------------------------------------------------------------------------------
+MyApp:				mymotivz_new
+Sandbox Account:		sb-enwu36167946@business.example.com
+Clien Id:			
+AeregYEhd4I1f-U-zYYp1QFCpb9VwEAu4S4Vw0qZtG3yJxXX7-SkteW47aCWe-EKuTDPMCvQnI8k49WY
+Client Secrete:
+EGZ2TBOnz-q9kaJiaYi5uFhZ80urUunwbcGRtMuMoPNiymhKEgqSAqyPOngyZWMbD1ILwWDIIq61JHdt
+---------------------------------------------------------------------------------
+Sandbox Link:			https://www.sandbox.paypal.com/us/signin
+email:				sb-enwu36167946@business.example.com
+password:			Ht!D0>vP
+
+Customers:
+email:				sb-amwzr8045491@personal.example.com
+password:			'=8^cY<H
+
+email:				sb-sctsi6193435@personal.example.com
+password:			&rm3m$Vd
+	
+email:				sb-oixpx6170225@personal.example.com
+password:			MB^A:p-6
+
+
+---------------------------------------------------------------------------------
+MyApp:				test app
+Sandbox Account:		sb-y3znm8067024@business.example.com
+Clien Id:			
+AWVAzq6NWHr5uBhpZ4GP34mksT2HuDCQO7-CMgnzy3oo9WNGr9hij_3FQrtHF8BC2ZlzP5w9eM3_v6rX
+Client Secrete:
+ECiAABQVOWBT2c2NfoUXSD-fe4qQCNseM4I5QCAlcqMKhVD_uwZ8K5FPyeICXYFNGMvSFghfpmg3UvoO
+--------------------------------------------------------------------------------
+
+Sandbox Link:			https://www.sandbox.paypal.com/us/signin
+email:				sb-y3znm8067024@business.example.com
+password:			KE)C2IqG
