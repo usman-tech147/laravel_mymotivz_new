@@ -2,13 +2,10 @@
 
 use Illuminate\Support\Facades\Route;
 
-Route::get('paypal/create', [\App\Http\Controllers\PaypalController::class, 'createPayment'])->name('paypal.create_payment');
-Route::post('paypal/payment', [\App\Http\Controllers\PaypalController::class, 'storePayment'])->name('paypal.store_payment');
-Route::get('success/payment', [\App\Http\Controllers\PaypalController::class, 'successPayment'])->name('paypal.success');
-Route::get('cancel/payment', [\App\Http\Controllers\PaypalController::class, 'cancelPayment'])->name('paypal.cancel');
+Route::get('/paypal/token',[\App\Http\Controllers\PaypalController::class, 'getToken']);
+Route::get('/paypal/create-package',[\App\Http\Controllers\PaypalController::class, 'createPackage']);
+Route::get('/paypal/products-list',[\App\Http\Controllers\PaypalController::class, 'productsList']);
+Route::get('/paypal/plans-list',[\App\Http\Controllers\PaypalController::class, 'plansList']);
+Route::post('/paypal/subscribe-now',[\App\Http\Controllers\PaypalController::class, 'subscribeNow'])->name('subscribe-now');
+Route::get('/process-subscription', [\App\Http\Controllers\PaypalController::class, 'paypalSuccess']);
 
-Route::get('/create/plan',[\App\Http\Controllers\PaypalController::class, 'createPlan'])->name('paypal.create_plan');
-Route::get('/plan/details',[\App\Http\Controllers\PaypalController::class, 'getPlanDetails'])->name('paypal.plan_details');
-Route::get('/list/plans',[\App\Http\Controllers\PaypalController::class, 'getListPlans'])->name('paypal.list_plans');
-Route::get('/execute-agreement/true',[\App\Http\Controllers\PaypalController::class, 'executeAgreementTrue']);
-Route::get('/execute-agreement/false',[\App\Http\Controllers\PaypalController::class, 'executeAgreementFalse']);

@@ -3,6 +3,7 @@
 namespace App\Http;
 
 use App\Http\Middleware\CheckLinks;
+use App\Http\Middleware\PaymentDetailsMiddleware;
 use Illuminate\Foundation\Http\Kernel as HttpKernel;
 
 class Kernel extends HttpKernel
@@ -67,6 +68,7 @@ class Kernel extends HttpKernel
         'UserNotAuth' =>  \App\Http\Middleware\UserNotAuth::class,
         'CandidateProfileAuth' => \App\Http\Middleware\CandidateProfileAuth::class,
         'checkLinks' => CheckLinks::class,
+        'paymentDetails' => PaymentDetailsMiddleware::class,
     ];
 
     /**

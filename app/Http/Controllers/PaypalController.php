@@ -2,243 +2,236 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\PayPal\Package;
+use Carbon\Carbon;
+use Carbon\Exceptions\Exception;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Config;
-use PayPal\Api\Amount;
-use PayPal\Api\ChargeModel;
-use PayPal\Api\Currency;
-use PayPal\Api\Details;
-use PayPal\Api\Item;
-use PayPal\Api\ItemList;
-use PayPal\Api\MerchantPreferences;
-use PayPal\Api\Payer;
-use PayPal\Api\Payment;
-use PayPal\Api\PaymentDefinition;
-use PayPal\Api\PaymentExecution;
-use PayPal\Api\Plan;
-use PayPal\Api\PlanList;
-use PayPal\Api\RedirectUrls;
-use PayPal\Api\Transaction;
-use PayPal\Auth\OAuthTokenCredential;
-use PayPal\Rest\ApiContext;
-use PHPUnit\Util\Exception;
+use Illuminate\Support\Facades\Http;
 
 class PaypalController extends Controller
 {
-    public $apiContext;
-
-    public function __construct()
+    public function getToken()
     {
+        $response = Http::withBasicAuth(env('PAYPAL_CLIENT_ID'), env('PAYPAL_CLIENT_SECRET'))
+            ->asForm()
+            ->post(env('PAYPAL_MODE') . '/v1/oauth2/token', [
+                'grant_type' => 'client_credentials',
+            ]);
+        $responseDecode = json_decode($response);
+        return $token = $responseDecode->token_type . ' ' . $responseDecode->access_token;
+    }
 
-        $paypal_conf = Config::get('paypal');
-        $this->apiContext = new ApiContext(new OAuthTokenCredential(
-                $paypal_conf['client_id'],
-                $paypal_conf['secret'])
+    public function createPackage()
+    {
+        $package = new Package();
+        $name = 'THE DEPARTMENT';
+        $description = "10 Active Job,Unlimited Applicants,“MM” Traffic Booster,Instant Email Alerts,Dashboard Access & Hiring Tools";
+        $description .= "Customer Support,+Add Team Members";
+        $package->name = $name;
+        $package->details = $description;
+        $package->price = 600;
+        if ($package->save()) {
+            try {
+                $productPaypal = $this->createProduct($name, $description);
+                $planPaypal = $this->createPlan($productPaypal->id, $package->name, 'month', 1, $package->price);
+                $package->paypal_product_id = $productPaypal->id;
+                $package->paypal_plan_id = $planPaypal->id;
+                $package->save();
+//                dd("product created successfully");
+            } catch (\Exception $ex) {
+                dd($ex->getCode(), $ex->getLine(), $ex->getMessage());
+            }
+        }
+        $this->productsList();
+    }
+
+    public function createProduct($p_name, $p_details)
+    {
+        $createProduct = Http::withHeaders(
+            [
+                'Content-type' => 'application/json',
+                'Authorization' => $this->getToken(),
+            ]
+        )->post(env('PAYPAL_MODE') . '/v1/catalogs/products',
+            [
+                'name' => $p_name,
+                'description' => substr($p_details, 0, 500),
+                'type' => 'SERVICE',
+                'category' => 'SOFTWARE',
+                'home_url' => env('APP_URL'),
+            ]
         );
-        $this->apiContext->setConfig($paypal_conf['settings']);
-
-//        $this->apiContext = new \PayPal\Rest\ApiContext(
-//            new \PayPal\Auth\OAuthTokenCredential(
-//                env('PAYPAL_SANDBOX_CLIENT_ID'),
-//                env('PAYPAL_SANDBOX_CLIENT_SECRET'),
-//                env('PAYPAL_MODE')
-//            )
-//        );
+        return json_decode($createProduct);
     }
 
-    public function createPayment()
+    public function createPlan($productId, $name, $interval, $intervalCount, $price)
     {
-//        $payer = new Payer();
-//        $payer->setPaymentMethod("paypal");
-//        $plan = Plan::get('P-8EE52815BY995843KMFRQ5VY', $this->apiContext);
-        dd($this->apiContext);
+        $plan = Http::withHeaders(
+            [
+                "Accept" => "application/json",
+                "Authorization" => $this->getToken(),
+                "Content-Type" => "application/json",
+            ])
+            ->post(env('PAYPAL_MODE') . '/v1/billing/plans',
+                array(
+                    'product_id' => $productId,
+                    'name' => $name,
+                    'description' => "$interval $name For $price",
+                    'status' => 'Active',
+                    'billing_cycles' =>
+                        array(
+                            0 =>
+                                array(
+                                    'frequency' =>
+                                        array(
+                                            'interval_unit' => strtoupper($interval),
+                                            'interval_count' => $intervalCount,
+                                        ),
+                                    'tenure_type' => 'REGULAR',
+                                    'sequence' => 1,
+                                    'total_cycles' => 0,
+                                    'pricing_scheme' =>
+                                        array(
+                                            'fixed_price' =>
+                                                array(
+                                                    'value' => $price,
+                                                    'currency_code' => 'USD',
+                                                ),
+                                        ),
+                                ),
+                        ),
+                    'payment_preferences' =>
+                        array(
+                            'auto_bill_outstanding' => false,
+                            'setup_fee' =>
+                                array(
+                                    'value' => '0',
+                                    'currency_code' => 'USD',
+                                ),
+                            'setup_fee_failure_action' => 'CANCEL',
+                            'payment_failure_threshold' => 1,
+                        ),
+                    'taxes' =>
+                        array(
+                            'percentage' => '0',
+                            'inclusive' => false,
+                        ),
+                )
+            );
+
+        return json_decode($plan);
     }
 
-    public function storePayment(Request $request)
+    public function productsList()
     {
-        $payer = new Payer();
-        $payer->setPaymentMethod("paypal");
+        $list = Http::withHeaders(
+            ['Content-Type' => 'application/json', 'Authorization' => $this->getToken()]
+        )->get(env('PAYPAL_MODE') . '/v1/catalogs/products');
 
-        $item1 = new Item();
-        $item1->setName('Ground Coffee 40 oz')
-            ->setCurrency('USD')
-            ->setQuantity(1)
-            ->setSku("123123")// Similar to `item_number` in Classic API
-            ->setPrice(20);
-        $item2 = new Item();
-        $item2->setName('Granola bars')
-            ->setCurrency('USD')
-            ->setQuantity(5)
-            ->setSku("321321")// Similar to `item_number` in Classic API
-            ->setPrice(10);
+        $productsList = json_decode($list);
+        dd($productsList);
+    }
 
-        $itemList = new ItemList();
-        $itemList->setItems(array($item1, $item2));
+    public function plansList()
+    {
+        $list = Http::withHeaders(
+            ['Content-Type' => 'application/json', 'Authorization' => $this->getToken()]
+        )->get(env('PAYPAL_MODE') . '/v1/billing/plans?status=ACTIVE');
 
-        $details = new Details();
-        $details->setShipping(1)
-            ->setTax(1)
-            ->setSubtotal(70);
+        dd(json_decode($list));
+    }
 
-        $amount = new Amount();
-        $amount->setCurrency("USD")
-            ->setTotal(72)
-            ->setDetails($details);
+    public function subscribeNow(Request $request)
+    {
+        $package = Package::find($request->package_id);
+        $subscription = $this->subscription($package->paypal_plan_id, env('APP_URL') . '/process-subscription?success=true&package_id=' . $package->id, env('APP_URL'));
+        $link = $this->getApprovalLink($subscription);
+        return redirect($link);
+    }
 
-        $transaction = new Transaction();
-        $transaction->setAmount($amount)
-            ->setItemList($itemList)
-            ->setDescription("Payment description")
-            ->setInvoiceNumber(uniqid());
+    public function subscription($planId, $successURL, $cancelURL)
+    {
+        $subscription = Http::withHeaders([
+            "Accept" => "application/json",
+            "Authorization" => $this->getToken(),
+            "Content-Type" => "application/json",
+//                "PayPal-Request-Id" => "SUBSCRIPTION-" . uniqid() . time() . date('d-m-y')
+        ])->post(env('PAYPAL_MODE') . '/v1/billing/subscriptions',
+            array(
+                'plan_id' => $planId,
+                'start_time' => Carbon::now()->addSeconds(60),
+                'quantity' => '1',
+                'shipping_amount' =>
+                    array(
+                        'currency_code' => 'USD',
+                        'value' => '0',
+                    ),
+                'subscriber' =>
+                    array(
+                        'name' =>
+                            array(
+                                'given_name' => 'John',
+                                'surname' => 'Doe',
+                            ),
+                        'email_address' => 'customer@example.com',
+                        'shipping_address' =>
+                            array(
+                                'name' =>
+                                    array(
+                                        'full_name' => 'John Doe',
+                                    ),
+                                'address' =>
+                                    array(
+                                        'address_line_1' => '2211 N First Street',
+                                        'address_line_2' => 'Building 17',
+                                        'admin_area_2' => 'San Jose',
+                                        'admin_area_1' => 'CA',
+                                        'postal_code' => '95131',
+                                        'country_code' => 'US',
+                                    ),
+                            ),
+                    ),
+                'application_context' =>
+                    array(
+                        'brand_name' => 'Mymotivz',
+                        'locale' => 'en-US',
+                        'shipping_preference' => 'SET_PROVIDED_ADDRESS',
+                        'user_action' => 'SUBSCRIBE_NOW',
+                        'payment_method' =>
+                            array(
+                                'payer_selected' => 'PAYPAL',
+                                'payee_preferred' => 'IMMEDIATE_PAYMENT_REQUIRED',
+                            ),
+                        'return_url' => $successURL,
+                        'cancel_url' => $cancelURL,
+                    ),
+            )
+        );
+        return json_decode($subscription);
+    }
 
-        $baseUrl = 'http://localhost:8000';
-        $redirectUrls = new RedirectUrls();
-        $redirectUrls->setReturnUrl("$baseUrl/success/payment")
-            ->setCancelUrl("$baseUrl/cancel/payment");
+    public function getApprovalLink($subscription)
+    {
+        try {
+            $link=PayPalController::getApprovalLink($subscription);
+            try {
+                PayPalAgreement::create([
+                    'user_id'=>auth()->guard('user')->user()->id,
+                    'package_id'=>$package->id,
+                    'agreement_id'=>$subscription->id
+                ]);
+            }
+            catch (\Exception $ex){
 
-        $payment = new Payment();
-        $payment->setIntent("sale")
-            ->setPayer($payer)
-            ->setRedirectUrls($redirectUrls)
-            ->setTransactions(array($transaction));
+            }
+            return redirect($link);
+        }
+        catch (\Exception $ex){
 
-        $payment->create($this->apiContext);
-//        dd($payment);
-        return redirect($payment->getApprovalLink());
+        }
+    }
+    public function paypalSuccess(Request $request)
+    {
         dd($request->all());
     }
-
-    public function successPayment()
-    {
-//        if (isset($_GET['success']) && $_GET['success'] == 'true') {
-        $paymentId = $_GET['paymentId'];
-        $payment = Payment::get($paymentId, $this->apiContext);
-
-        $execution = new PaymentExecution();
-        $execution->setPayerId($_GET['PayerID']);
-        $result = $payment->execute($execution, $this->apiContext);
-        if ($result->getState() == 'approved') {
-            return redirect()->route('payment.details');
-        }
-//            dd($result);
-
-        $transaction = new Transaction();
-        $amount = new Amount();
-        $details = new Details();
-
-        $details->setShipping(2.2)
-            ->setTax(1.3)
-            ->setSubtotal(17.50);
-
-        $amount->setCurrency('USD');
-        $amount->setTotal(21);
-        $amount->setDetails($details);
-        $transaction->setAmount($amount);
-
-        $execution->addTransaction($transaction);
-
-        try {
-            $result = $payment->execute($execution, $this->apiContext);
-
-//                ResultPrinter::printResult("Executed Payment", "Payment", $payment->getId(), $execution, $result);
-
-            try {
-                $payment = Payment::get($paymentId, $this->apiContext);
-            } catch (Exception $ex) {
-
-//                    ResultPrinter::printError("Get Payment", "Payment", null, null, $ex);
-                exit(1);
-            }
-        } catch (Exception $ex) {
-
-//                ResultPrinter::printError("Executed Payment", "Payment", null, null, $ex);
-            exit(1);
-        }
-
-//            ResultPrinter::printResult("Get Payment", "Payment", $payment->getId(), null, $payment);
-
-        return $payment;
-//        }
-//        else {
-//            ResultPrinter::printResult("User Cancelled the Approval", null);
-//            exit;
-//        }
-    }
-
-
-    public function cancelPayment()
-    {
-        dd("cancel payment");
-    }
-
-    public function createPlan()
-    {
-        $plan = new Plan();
-        $plan->setName('Diamond')
-            ->setDescription('Diamond Plan')
-            ->setType('fixed');
-
-        $paymentDefinition = new PaymentDefinition();
-        $paymentDefinition->setName('Regular Payments')
-            ->setType('REGULAR')
-            ->setFrequency('Month')
-            ->setFrequencyInterval("1")
-            ->setCycles("12")
-            ->setAmount(new Currency(array('value' => 200, 'currency' => 'USD')));
-
-
-        $chargeModel = new ChargeModel();
-        $chargeModel->setType('SHIPPING')
-            ->setAmount(new Currency(array('value' => 10, 'currency' => 'USD')));
-
-        $paymentDefinition->setChargeModels(array($chargeModel));
-
-
-        $merchantPreferences = new MerchantPreferences();
-        $baseUrl = $this->getBaseUrl();
-
-        $merchantPreferences->setReturnUrl("$baseUrl/execute-agreement/true")
-            ->setCancelUrl("$baseUrl/execute-agreement/false")
-            ->setAutoBillAmount("yes")
-            ->setInitialFailAmountAction("CONTINUE")
-            ->setMaxFailAttempts("0")
-            ->setSetupFee(new Currency(array('value' => 1, 'currency' => 'USD')));
-
-        $plan->setPaymentDefinitions(array($paymentDefinition));
-        $plan->setMerchantPreferences($merchantPreferences);
-
-        $output = $plan->create($this->apiContext);
-
-        dd($output);
-    }
-
-    public function getPlanDetails()
-    {
-        $plan = Plan::get('P-6GR671137A924900YNMI2EIY',$this->apiContext);
-        dd($plan);
-    }
-
-    public function getListPlans()
-    {
-        $params = array('page_size' => '10');
-        $planList = Plan::all($params, $this->apiContext);
-        dd($planList->toArray());
-    }
-
-    public function executeAgreementTrue()
-    {
-        dd('true');
-    }
-
-    public function executeAgreementFalse()
-    {
-        dd('false');
-    }
-
-    public function getBaseUrl()
-    {
-        return 'http://localhost:8000';
-    }
-
-
 }

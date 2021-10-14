@@ -13,7 +13,18 @@
                     <div class="col-md-8">
                         <div class="payment-information">
                             <h2 class="payment-title">Payment Information</h2>
-                            <section></section>
+                            <section>
+                                <form action="{{route('subscribe-now')}}" method="post">
+                                    @csrf
+                                    <input type="hidden" name="package_id" value="{{$id}}">
+                                    <div class="col-md-6" style="text-align: center;">
+                                        <label style="margin: 0px 0px 25px">Paypal: </label>
+                                        <button style="background: transparent" id="checkout-button-paypal">
+                                            <img src="/paypal.jpg" style="width: 100px;" alt="">
+                                        </button>
+                                    </div>
+                                </form>
+                            </section>
                         </div>
                         <div class="payment-information">
                             <h2 class="payment-title">Billing Information</h2>
@@ -119,7 +130,7 @@
                                     <li class="total"><strong>Order Total: <span>$170</span></strong></li>
                                 </ul>
 
-                                <form action="{{route('paypal.store_payment')}}" method="post">
+                                <form action="#" method="post">
                                     @csrf
                                     <button type="submit"><i class="fa fa-lock"></i>Place Order</button>
                                 </form>
@@ -137,13 +148,15 @@
     <!--// Main Content \\-->
 @endsection
 
-@section('js')
+@section('script')
 
     <script src="{{asset('user/script/file-input/sortable.js')}}" type="text/javascript"></script>
     <script src="{{asset('user/script/file-input/fileinput.js')}}" type="text/javascript"></script>
     <script src="{{asset('user/script/file-input/theme.js')}}" type="text/javascript"></script>
     <script src="{{asset('assets/scripts/notify.min.js')}}"></script>
     <script>
+        function submitPayPal() {
 
+        }
     </script>
 @endsection

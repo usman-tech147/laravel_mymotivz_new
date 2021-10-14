@@ -12,6 +12,7 @@ use App\Mail\CareerDevelopMail;
 use App\Mail\ContactUserMail;
 use App\Mail\SendJobApplyEmailVerifyCode;
 use App\Candidate;
+use App\Models\PayPal\Package;
 use App\NewCandidate;
 use App\candidate_resume;
 use App\NewClient;
@@ -2145,12 +2146,13 @@ class HomeController extends Controller
 
     public function pricingPlans()
     {
-        return view('user.pricing_plan');
+        $package_ids = Package::all()->pluck('id');
+        return view('user.pricing_plan', compact('package_ids'));
     }
 
-    public function paymentDetails()
+    public function paymentDetails($id)
     {
-        return view('user.payment_details');
+        return view('user.payment_details',compact('id'));
     }
 //    public function upload_image_cke(Request $request)
 //    {
