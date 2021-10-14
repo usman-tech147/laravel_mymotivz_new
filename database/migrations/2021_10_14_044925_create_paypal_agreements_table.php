@@ -15,6 +15,11 @@ class CreatePaypalAgreementsTable extends Migration
     {
         Schema::create('paypal_agreements', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('new_client_id');
+            $table->unsignedBigInteger('package_id');
+            $table->string('agreement_id')->unique();
+            $table->foreign('new_client_id')->references('id')->on('new_clients')->onDelete('restrict');
+            $table->foreign('package_id')->references('id')->on('packages')->onDelete('restrict');
             $table->timestamps();
         });
     }

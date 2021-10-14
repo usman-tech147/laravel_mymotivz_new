@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\PayPal\Package;
+use App\Models\PayPal\PaypalAgreement;
 use Carbon\Carbon;
 use Carbon\Exceptions\Exception;
 use Illuminate\Http\Request;
@@ -145,7 +146,21 @@ class PaypalController extends Controller
     {
         $package = Package::find($request->package_id);
         $subscription = $this->subscription($package->paypal_plan_id, env('APP_URL') . '/process-subscription?success=true&package_id=' . $package->id, env('APP_URL'));
-        $link = $this->getApprovalLink($subscription);
+        try {
+            $link = $this->getApprovalLink($subscription);
+            try {
+                $agreement = new PaypalAgreement();
+                $agreement->new_client_id = session('c_email.id');
+                $agreement->package_id = $package->id;
+                $agreement->agreement_id = $subscription->id;
+                $agreement->save();
+            } catch (\Exception $ex) {
+
+            }
+//            return redirect($link);
+        } catch (\Exception $ex) {
+
+        }
         return redirect($link);
     }
 
@@ -212,24 +227,13 @@ class PaypalController extends Controller
 
     public function getApprovalLink($subscription)
     {
-        try {
-            $link=PayPalController::getApprovalLink($subscription);
-            try {
-                PayPalAgreement::create([
-                    'user_id'=>auth()->guard('user')->user()->id,
-                    'package_id'=>$package->id,
-                    'agreement_id'=>$subscription->id
-                ]);
+        foreach ($subscription->links as $link) {
+            if ($link->rel == 'approve') {
+                return $link->href;
             }
-            catch (\Exception $ex){
-
-            }
-            return redirect($link);
-        }
-        catch (\Exception $ex){
-
         }
     }
+
     public function paypalSuccess(Request $request)
     {
         dd($request->all());
