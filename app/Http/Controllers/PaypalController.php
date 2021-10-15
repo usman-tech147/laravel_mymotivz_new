@@ -4,13 +4,27 @@ namespace App\Http\Controllers;
 
 use App\Models\PayPal\Package;
 use App\Models\PayPal\PaypalAgreement;
+use App\NewClient;
 use Carbon\Carbon;
 use Carbon\Exceptions\Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use PayPal\Auth\OAuthTokenCredential;
+use PayPal\Rest\ApiContext;
 
 class PaypalController extends Controller
 {
+    public $context;
+
+    public function getApiContext()
+    {
+        return $apiContext = new ApiContext(
+            new OAuthTokenCredential(
+                env('PAYPAL_CLIENT_ID'),
+                env('PAYPAL_CLIENT_SECRET')
+            )
+        );
+    }
     public function getToken()
     {
         $response = Http::withBasicAuth(env('PAYPAL_CLIENT_ID'), env('PAYPAL_CLIENT_SECRET'))
@@ -38,12 +52,10 @@ class PaypalController extends Controller
                 $package->paypal_product_id = $productPaypal->id;
                 $package->paypal_plan_id = $planPaypal->id;
                 $package->save();
-//                dd("product created successfully");
             } catch (\Exception $ex) {
                 dd($ex->getCode(), $ex->getLine(), $ex->getMessage());
             }
         }
-        $this->productsList();
     }
 
     public function createProduct($p_name, $p_details)
@@ -237,5 +249,27 @@ class PaypalController extends Controller
     public function paypalSuccess(Request $request)
     {
         dd($request->all());
+    }
+    public function planDetails($id)
+    {
+        $plan = Http::withHeaders(
+            [
+                "Accept" => "application/json",
+                "Authorization" => $this->getToken(),
+                "Content-Type" => "application/json",
+            ])->get(env('PAYPAL_MODE') . "/v1/billing/plans/$id");
+
+        return json_decode($plan);
+    }
+    public function subscriptionDetails($agreementId)
+    {
+        $subscriptionDetails = Http::withHeaders(
+            [
+                "Accept" => "application/json",
+                "Authorization" => $this->getToken(),
+                "Content-Type" => "application/json",
+            ])->get(env('PAYPAL_MODE') . '/v1/billing/subscriptions/' . $agreementId);
+
+        return json_decode($subscriptionDetails);
     }
 }

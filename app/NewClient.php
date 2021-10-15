@@ -2,6 +2,7 @@
 
 namespace App;
 
+use App\Models\PayPal\Package;
 use Illuminate\Database\Eloquent\Model;
 
 class NewClient extends Model
@@ -38,5 +39,12 @@ class NewClient extends Model
     }
     public function state(){
         return $this->belongsTo(State::class, 'state_id', 'id');
+    }
+    public function packages(){
+        return $this->belongsToMany(Package::class,'client_packages')
+            ->withPivot('id','username','password','subscribed_at','updated_at',
+                'created_at','subscribed_status','renewal_status','payment_method',
+                'subscription_id','expired_at','billing_agreement_id','payment_by',
+                'error_message','frequency','interval_count');
     }
 }
