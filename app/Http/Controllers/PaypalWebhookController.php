@@ -14,7 +14,6 @@ class PaypalWebhookController extends Controller
 {
     public function webhook(Request $request)
     {
-
         //get the webhook payload
         $paypal = new PaypalController();
         $requestBody = file_get_contents('php://input');
