@@ -20,7 +20,8 @@
                                     <div class="col-md-6" style="text-align: center;">
                                         <label style="margin: 0px 0px 25px">Paypal: </label>
                                         <button style="background: transparent" id="checkout-button-paypal">
-                                            <img src="/paypal.jpg" style="width: 100px;" alt="">
+                                            {{--<img src="/paypal.jpg" style="width: 100px;" alt="">--}}
+                                            <button type="submit" class="btn btn-secondary"> Paypal </button>
                                         </button>
                                     </div>
                                 </form>

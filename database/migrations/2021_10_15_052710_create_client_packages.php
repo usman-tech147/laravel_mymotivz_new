@@ -33,8 +33,10 @@ class CreateClientPackages extends Migration
             $table->rememberToken();
             $table->timestamps();
 
-            $table->foreign('new_client_id')->references('id')->on('new_clients')->onDelete('restrict');
-            $table->foreign('package_id')->references('id')->on('packages')->onDelete('restrict');
+            $table->foreign('new_client_id')->references('id')
+                ->on('new_clients')->onDelete('restrict');
+            $table->foreign('package_id')->references('id')
+                ->on('packages')->onDelete('restrict');
             $table->unique(['new_client_id','package_id']);
         });
     }

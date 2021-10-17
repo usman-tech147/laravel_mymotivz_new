@@ -25,6 +25,7 @@ class PaypalController extends Controller
             )
         );
     }
+
     public function getToken()
     {
         $response = Http::withBasicAuth(env('PAYPAL_CLIENT_ID'), env('PAYPAL_CLIENT_SECRET'))
@@ -39,12 +40,11 @@ class PaypalController extends Controller
     public function createPackage()
     {
         $package = new Package();
-        $name = 'THE DEPARTMENT';
-        $description = "10 Active Job,Unlimited Applicants,“MM” Traffic Booster,Instant Email Alerts,Dashboard Access & Hiring Tools";
-        $description .= "Customer Support,+Add Team Members";
+        $name = 'plan 3';
+        $description = "this is plan 3";
         $package->name = $name;
         $package->details = $description;
-        $package->price = 600;
+        $package->price = 300;
         if ($package->save()) {
             try {
                 $productPaypal = $this->createProduct($name, $description);
@@ -52,6 +52,7 @@ class PaypalController extends Controller
                 $package->paypal_product_id = $productPaypal->id;
                 $package->paypal_plan_id = $planPaypal->id;
                 $package->save();
+                dd($package->toArray());
             } catch (\Exception $ex) {
                 dd($ex->getCode(), $ex->getLine(), $ex->getMessage());
             }
@@ -182,7 +183,6 @@ class PaypalController extends Controller
             "Accept" => "application/json",
             "Authorization" => $this->getToken(),
             "Content-Type" => "application/json",
-//                "PayPal-Request-Id" => "SUBSCRIPTION-" . uniqid() . time() . date('d-m-y')
         ])->post(env('PAYPAL_MODE') . '/v1/billing/subscriptions',
             array(
                 'plan_id' => $planId,
@@ -250,6 +250,7 @@ class PaypalController extends Controller
     {
         dd($request->all());
     }
+
     public function planDetails($id)
     {
         $plan = Http::withHeaders(
@@ -261,6 +262,7 @@ class PaypalController extends Controller
 
         return json_decode($plan);
     }
+
     public function subscriptionDetails($agreementId)
     {
         $subscriptionDetails = Http::withHeaders(

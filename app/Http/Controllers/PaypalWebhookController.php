@@ -8,6 +8,7 @@ use App\Models\PayPal\PaypalAgreement;
 use App\NewClient;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use PayPal\Api\VerifyWebhookSignature;
 
 class PaypalWebhookController extends Controller
@@ -15,9 +16,8 @@ class PaypalWebhookController extends Controller
     public function webhook(Request $request)
     {
         //get the webhook payload
-        $paypal = new PaypalController();
+        $paypalController = new PaypalController();
         $requestBody = file_get_contents('php://input');
-
         //check if webhook payload has data
         if ($requestBody) {
             //request body is set
@@ -55,7 +55,7 @@ class PaypalWebhookController extends Controller
         $signatureVerification->setRequestBody($requestBody);
         $request = clone $signatureVerification;
         try {
-            $output = $signatureVerification->post($paypal->getApiContext());
+            $output = $signatureVerification->post($paypalController->getApiContext());
         } catch (\Exception $ex) {
             exit(1);
         }
@@ -80,7 +80,7 @@ class PaypalWebhookController extends Controller
 //                        ManualSubscriptionRequest::where('user_id', $billingAgreement->user_id)->where('package_id', $billingAgreement->package_id)->delete();
                         $subscribed_at = new Carbon($requestBodyDecode->resource->billing_info->last_payment->time);
                         $expired_at = new Carbon($requestBodyDecode->resource->billing_info->next_billing_time);
-                        $plan = $paypal->planDetails($requestBodyDecode->resource->plan_id);
+                        $plan = $paypalController->planDetails($requestBodyDecode->resource->plan_id);
                         try {
                             $user->packages()->attach($billingAgreement->package_id,
                                 [
@@ -121,7 +121,6 @@ class PaypalWebhookController extends Controller
                             }
                             $subPackage->updated_at = Carbon::now();
                             $subPackage->save();
-
                         }
                     }
                     if ($eventType == "PAYMENT.SALE.COMPLETED") {
@@ -134,11 +133,10 @@ class PaypalWebhookController extends Controller
                             'package_id' => $billingAgreement->package_id,
                             'payment_by' => 'Paypal'
                         ]);
-                        $agreement = $paypal->subscriptionDetails($requestBodyDecode->resource->billing_agreement_id);
-                        $plan = $paypal->planDetails($agreement->plan_id);
+                        $agreement = $paypalController->subscriptionDetails($requestBodyDecode->resource->billing_agreement_id);
+                        $plan = $paypalController->planDetails($agreement->plan_id);
                         $user = NewClient::find($billingAgreement->new_client_id);
                         $userPackage = $user->packages->where('pivot.billing_agreement_id', $requestBodyDecode->resource->billing_agreement_id)->first();
-
                         $userPackage->pivot->subscribed_status = ucwords(strtolower($agreement->status));
                         $userPackage->pivot->frequency = $plan->billing_cycles[0]->frequency->interval_unit;
                         $userPackage->pivot->interval_count = $plan->billing_cycles[0]->frequency->interval_count;
@@ -155,15 +153,18 @@ class PaypalWebhookController extends Controller
                         } else {
                             $expired_at = new Carbon($subscribed_at);
 
-                            if ($plan->billing_cycles[0]->frequency->interval_unit == 'MONTH' && $plan->billing_cycles[0]->frequency->interval_count == 1) {
+                            if ($plan->billing_cycles[0]->frequency->interval_unit == 'MONTH' &&
+                                $plan->billing_cycles[0]->frequency->interval_count == 1) {
                                 $expired_at = $expired_at->addMonths(1);
                             }
-                            if ($plan->billing_cycles[0]->frequency->interval_unit == 'MONTH' && $plan->billing_cycles[0]->frequency->interval_count == 6) {
-                                $expired_at = $expired_at->addMonths(6);
-                            }
-                            if ($plan->billing_cycles[0]->frequency->interval_unit == 'YEAR' && $plan->billing_cycles[0]->frequency->interval_count == 1) {
-                                $expired_at = $expired_at->addYear();
-                            }
+//                            if ($plan->billing_cycles[0]->frequency->interval_unit == 'MONTH' &&
+//                                $plan->billing_cycles[0]->frequency->interval_count == 6) {
+//                                $expired_at = $expired_at->addMonths(6);
+//                            }
+//                            if ($plan->billing_cycles[0]->frequency->interval_unit == 'YEAR' &&
+//                                $plan->billing_cycles[0]->frequency->interval_count == 1) {
+//                                $expired_at = $expired_at->addYear();
+//                            }
                             $userPackage->pivot->expired_at = $expired_at;
                         }
 

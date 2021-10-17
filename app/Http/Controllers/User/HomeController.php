@@ -13,6 +13,7 @@ use App\Mail\ContactUserMail;
 use App\Mail\SendJobApplyEmailVerifyCode;
 use App\Candidate;
 use App\Models\PayPal\Package;
+use App\Models\PayPal\PaypalAgreement;
 use App\NewCandidate;
 use App\candidate_resume;
 use App\NewClient;
@@ -2152,7 +2153,13 @@ class HomeController extends Controller
 
     public function paymentDetails($id)
     {
-        return view('user.payment_details',compact('id'));
+        $user = new NewClient();
+//        $billingAgreement = PayPalAgreement::where('agreement_id', 'I-J8C1KJU684JU')->first();
+//        $user = NewClient::find(38);
+//        $userPackage = $user->packages->where('pivot.billing_agreement_id', 'I-J8C1KJU684JU')->first();
+//
+//        dd($userPackage->pivot->renewal_status);
+        return view('user.payment_details', compact('id'));
     }
 //    public function upload_image_cke(Request $request)
 //    {

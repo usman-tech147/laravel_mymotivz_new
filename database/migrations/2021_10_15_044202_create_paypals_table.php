@@ -17,7 +17,7 @@ class CreatePaypalsTable extends Migration
             $table->id();
             $table->string('event_id')->unique();
             $table->string('event');
-            $table->json('response');
+            $table->text('response');
             $table->text('exception')->nullable();
             $table->timestamps();
         });
