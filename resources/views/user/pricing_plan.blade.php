@@ -17,63 +17,88 @@
                         </div>
                         <div class="price-plans">
                             <ul class="row">
-                                <li class="col-md-4">
-                                    <div class="price-plan-text">
-                                        <section>
-                                            <h3>One N Done</h3>
-                                            <h4>$170<small>/mo</small></h4>
-                                            <ul class="pricing-list">
-                                                <li>1 Active Job</li>
-                                                <li>Unlimited Applicants</li>
-                                                <li>“MM” Traffic Booster</li>
-                                                <li>Instant Email Alerts</li>
-                                                <li>Dashboard Access & Hiring Tools</li>
-                                                <li>Customer Support</li>
-                                            </ul>
-                                            <a href="{{route('payment.details',[$package_ids[0]])}}"
-                                               class="priicing-btn">PURCHASE</a>
-                                        </section>
-                                    </div>
-                                </li>
-                                <li class="col-md-4">
-                                    <div class="price-plan-text active">
-                                        <section>
-                                            <h3>Team Essential <span>(MOST POPULAR)</span></h3>
-                                            <h4>$330<small>/mo</small></h4>
-                                            <ul class="pricing-list">
-                                                <li>4 Active Jobs</li>
-                                                <li>Unlimited Applicants</li>
-                                                <li>“MM” Traffic Booster</li>
-                                                <li>Instant Email Alerts</li>
-                                                <li>Dashboard Access & Hiring Tools</li>
-                                                <li>+Add Team Members</li>
-                                                <li>Customer Support</li>
-                                            </ul>
-                                            <a href="{{route('payment.details', [$package_ids[1]])}}"
-                                               class="priicing-btn">PURCHASE</a>
-                                        </section>
-                                    </div>
-                                </li>
-                                <li class="col-md-4">
-                                    <div class="price-plan-text">
-                                        <section>
-                                            <h3>The Department</h3>
-                                            <h4>$600<small>/mo</small></h4>
-                                            <ul class="pricing-list">
-                                                <li>10 Active Jobs</li>
-                                                <li>Unlimited Applicants</li>
-                                                <li>“MM” Traffic Booster</li>
-                                                <li>Instant Email Alerts</li>
-                                                <li>Dashboard Access & Hiring Tools</li>
-                                                <li>+Add Team Members</li>
-                                                <li>Customer Support</li>
-                                            </ul>
-                                            <a href="{{route('payment.details', [$package_ids[2]])}}"
-                                               class="priicing-btn">PURCHASE</a>
-                                        </section>
-                                    </div>
-                                </li>
+                                @foreach($plans as $plan)
+                                    <li class="col-md-4">
+                                        <div class="price-plan-text">
+                                            <section>
+                                                <h3>{{$plan->name}}</h3>
+                                                <h4>{{$plan->price}}
+                                                    <small> after {{$plan->time}}</small>
+                                                </h4>
+                                                <ul class="pricing-list">
+                                                    <li>{{$plan->description}}</li>
+                                                </ul>
+                                                <a href="{{route('payment.details',[$plan->id])}}"
+                                                   class="priicing-btn">PURCHASE</a>
+                                            </section>
+                                        </div>
+                                    </li>
+                                @endforeach
                             </ul>
+                            {{--<ul class="row">--}}
+                            {{--<li class="col-md-4">--}}
+                            {{--<div class="price-plan-text">--}}
+                            {{--<section>--}}
+                            {{--<h3>One N Done</h3>--}}
+                            {{--<h4>$170--}}
+                            {{--<small>/mo</small>--}}
+                            {{--</h4>--}}
+                            {{--<ul class="pricing-list">--}}
+                            {{--<li>1 Active Job</li>--}}
+                            {{--<li>Unlimited Applicants</li>--}}
+                            {{--<li>“MM” Traffic Booster</li>--}}
+                            {{--<li>Instant Email Alerts</li>--}}
+                            {{--<li>Dashboard Access & Hiring Tools</li>--}}
+                            {{--<li>Customer Support</li>--}}
+                            {{--</ul>--}}
+                            {{--<a href="{{route('payment.details',[$package_ids[0]])}}"--}}
+                            {{--class="priicing-btn">PURCHASE</a>--}}
+                            {{--</section>--}}
+                            {{--</div>--}}
+                            {{--</li>--}}
+                            {{--<li class="col-md-4">--}}
+                            {{--<div class="price-plan-text active">--}}
+                            {{--<section>--}}
+                            {{--<h3>Team Essential <span>(MOST POPULAR)</span></h3>--}}
+                            {{--<h4>$330--}}
+                            {{--<small>/mo</small>--}}
+                            {{--</h4>--}}
+                            {{--<ul class="pricing-list">--}}
+                            {{--<li>4 Active Jobs</li>--}}
+                            {{--<li>Unlimited Applicants</li>--}}
+                            {{--<li>“MM” Traffic Booster</li>--}}
+                            {{--<li>Instant Email Alerts</li>--}}
+                            {{--<li>Dashboard Access & Hiring Tools</li>--}}
+                            {{--<li>+Add Team Members</li>--}}
+                            {{--<li>Customer Support</li>--}}
+                            {{--</ul>--}}
+                            {{--<a href="{{route('payment.details', [$package_ids[1]])}}"--}}
+                            {{--class="priicing-btn">PURCHASE</a>--}}
+                            {{--</section>--}}
+                            {{--</div>--}}
+                            {{--</li>--}}
+                            {{--<li class="col-md-4">--}}
+                            {{--<div class="price-plan-text">--}}
+                            {{--<section>--}}
+                            {{--<h3>The Department</h3>--}}
+                            {{--<h4>$600--}}
+                            {{--<small>/mo</small>--}}
+                            {{--</h4>--}}
+                            {{--<ul class="pricing-list">--}}
+                            {{--<li>10 Active Jobs</li>--}}
+                            {{--<li>Unlimited Applicants</li>--}}
+                            {{--<li>“MM” Traffic Booster</li>--}}
+                            {{--<li>Instant Email Alerts</li>--}}
+                            {{--<li>Dashboard Access & Hiring Tools</li>--}}
+                            {{--<li>+Add Team Members</li>--}}
+                            {{--<li>Customer Support</li>--}}
+                            {{--</ul>--}}
+                            {{--<a href="{{route('payment.details', [$package_ids[2]])}}"--}}
+                            {{--class="priicing-btn">PURCHASE</a>--}}
+                            {{--</section>--}}
+                            {{--</div>--}}
+                            {{--</li>--}}
+                            {{--</ul>--}}
                         </div>
                     </div>
                 </div>
@@ -87,7 +112,7 @@
                 <div class="row">
                     <div class="col-md-6">
                         <figure class="about-img"><img src="{{ asset('user/images/about-img1.jpg') }}" alt=""><img
-                                class="secnd-img" src="{{ asset('user/images/about-img.jpg') }}" alt=""></figure>
+                                    class="secnd-img" src="{{ asset('user/images/about-img.jpg') }}" alt=""></figure>
                     </div>
                     <div class="col-md-6">
                         <div class="about-text pricing-about">
@@ -136,8 +161,8 @@
                     </div>
                     <div class="col-md-6">
                         <figure class="career-development-img" style="margin: 0px;"><img
-                                src="{{asset('user/images/career-development-img1.jpg')}}" alt=""><img
-                                class="secnd-img" src="{{asset('user/images/career-development-img.jpg')}}" alt="">
+                                    src="{{asset('user/images/career-development-img1.jpg')}}" alt=""><img
+                                    class="secnd-img" src="{{asset('user/images/career-development-img.jpg')}}" alt="">
                         </figure>
                     </div>
                 </div>

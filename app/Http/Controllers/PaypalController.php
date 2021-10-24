@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\PayPal\Package;
 use App\Models\PayPal\PaypalAgreement;
+use App\Models\PayPal\Product;
 use App\NewClient;
 use Carbon\Carbon;
 use Carbon\Exceptions\Exception;
@@ -37,30 +38,13 @@ class PaypalController extends Controller
         return $token = $responseDecode->token_type . ' ' . $responseDecode->access_token;
     }
 
-    public function createPackage()
+    public function createProduct()
     {
-        $package = new Package();
-        $name = 'plan 3';
-        $description = "this is plan 3";
-        $package->name = $name;
-        $package->details = $description;
-        $package->price = 300;
-        if ($package->save()) {
-            try {
-                $productPaypal = $this->createProduct($name, $description);
-                $planPaypal = $this->createPlan($productPaypal->id, $package->name, 'month', 1, $package->price);
-                $package->paypal_product_id = $productPaypal->id;
-                $package->paypal_plan_id = $planPaypal->id;
-                $package->save();
-                dd($package->toArray());
-            } catch (\Exception $ex) {
-                dd($ex->getCode(), $ex->getLine(), $ex->getMessage());
-            }
-        }
-    }
-
-    public function createProduct($p_name, $p_details)
-    {
+        $p_name = "Mymotivz product 3";
+        $p_details = "this is Mymotivz product 3 description";
+        $p_type = "SERVICE";
+        $P_category = "SOFTWARE";
+        $url = env('APP_URL');
         $createProduct = Http::withHeaders(
             [
                 'Content-type' => 'application/json',
@@ -69,17 +53,24 @@ class PaypalController extends Controller
         )->post(env('PAYPAL_MODE') . '/v1/catalogs/products',
             [
                 'name' => $p_name,
-                'description' => substr($p_details, 0, 500),
-                'type' => 'SERVICE',
-                'category' => 'SOFTWARE',
-                'home_url' => env('APP_URL'),
+                'description' => $p_details,
+                'type' => $p_type,
+                'category' => $P_category,
+                'home_url' => $url,
             ]
         );
-        return json_decode($createProduct);
+        dd(json_decode($createProduct));
+//        return json_decode($createProduct);
     }
 
-    public function createPlan($productId, $name, $interval, $intervalCount, $price)
+    public function createPlan()
     {
+        $productId = 'PROD-28D27346WT835643N';
+        $name = 'Fifth Plan';
+        $description = 'this is fifth plan description';
+        $interval = 'WEEK';
+        $intervalCount = '1';
+        $price = '35';
         $plan = Http::withHeaders(
             [
                 "Accept" => "application/json",
@@ -90,7 +81,7 @@ class PaypalController extends Controller
                 array(
                     'product_id' => $productId,
                     'name' => $name,
-                    'description' => "$interval $name For $price",
+                    'description' => $description,
                     'status' => 'Active',
                     'billing_cycles' =>
                         array(
@@ -132,146 +123,170 @@ class PaypalController extends Controller
                         ),
                 )
             );
-
-        return json_decode($plan);
+        dd(json_decode($plan));
     }
 
-    public function productsList()
-    {
-        $list = Http::withHeaders(
-            ['Content-Type' => 'application/json', 'Authorization' => $this->getToken()]
-        )->get(env('PAYPAL_MODE') . '/v1/catalogs/products');
 
-        $productsList = json_decode($list);
-        dd($productsList);
-    }
 
-    public function plansList()
-    {
-        $list = Http::withHeaders(
-            ['Content-Type' => 'application/json', 'Authorization' => $this->getToken()]
-        )->get(env('PAYPAL_MODE') . '/v1/billing/plans?status=ACTIVE');
+//    public function createPackage()
+//    {
+//        $package = new Package();
+//        $name = 'plan 3';
+//        $description = "this is plan 3";
+//        $package->name = $name;
+//        $package->details = $description;
+//        $package->price = 300;
+//        if ($package->save()) {
+//            try {
+//                $productPaypal = $this->createProduct($name, $description);
+//                $planPaypal = $this->createPlan($productPaypal->id, $package->name, 'month', 1, $package->price);
+//                $package->paypal_product_id = $productPaypal->id;
+//                $package->paypal_plan_id = $planPaypal->id;
+//                $package->save();
+//                dd($package->toArray());
+//            } catch (\Exception $ex) {
+//                dd($ex->getCode(), $ex->getLine(), $ex->getMessage());
+//            }
+//        }
+//    }
 
-        dd(json_decode($list));
-    }
 
-    public function subscribeNow(Request $request)
-    {
-        $package = Package::find($request->package_id);
-        $subscription = $this->subscription($package->paypal_plan_id, env('APP_URL') . '/process-subscription?success=true&package_id=' . $package->id, env('APP_URL'));
-        try {
-            $link = $this->getApprovalLink($subscription);
-            try {
-                $agreement = new PaypalAgreement();
-                $agreement->new_client_id = session('c_email.id');
-                $agreement->package_id = $package->id;
-                $agreement->agreement_id = $subscription->id;
-                $agreement->save();
-            } catch (\Exception $ex) {
-
-            }
-//            return redirect($link);
-        } catch (\Exception $ex) {
-
-        }
-        return redirect($link);
-    }
-
-    public function subscription($planId, $successURL, $cancelURL)
-    {
-        $subscription = Http::withHeaders([
-            "Accept" => "application/json",
-            "Authorization" => $this->getToken(),
-            "Content-Type" => "application/json",
-        ])->post(env('PAYPAL_MODE') . '/v1/billing/subscriptions',
-            array(
-                'plan_id' => $planId,
-                'start_time' => Carbon::now()->addSeconds(60),
-                'quantity' => '1',
-                'shipping_amount' =>
-                    array(
-                        'currency_code' => 'USD',
-                        'value' => '0',
-                    ),
-                'subscriber' =>
-                    array(
-                        'name' =>
-                            array(
-                                'given_name' => 'John',
-                                'surname' => 'Doe',
-                            ),
-                        'email_address' => 'customer@example.com',
-                        'shipping_address' =>
-                            array(
-                                'name' =>
-                                    array(
-                                        'full_name' => 'John Doe',
-                                    ),
-                                'address' =>
-                                    array(
-                                        'address_line_1' => '2211 N First Street',
-                                        'address_line_2' => 'Building 17',
-                                        'admin_area_2' => 'San Jose',
-                                        'admin_area_1' => 'CA',
-                                        'postal_code' => '95131',
-                                        'country_code' => 'US',
-                                    ),
-                            ),
-                    ),
-                'application_context' =>
-                    array(
-                        'brand_name' => 'Mymotivz',
-                        'locale' => 'en-US',
-                        'shipping_preference' => 'SET_PROVIDED_ADDRESS',
-                        'user_action' => 'SUBSCRIBE_NOW',
-                        'payment_method' =>
-                            array(
-                                'payer_selected' => 'PAYPAL',
-                                'payee_preferred' => 'IMMEDIATE_PAYMENT_REQUIRED',
-                            ),
-                        'return_url' => $successURL,
-                        'cancel_url' => $cancelURL,
-                    ),
-            )
-        );
-        return json_decode($subscription);
-    }
-
-    public function getApprovalLink($subscription)
-    {
-        foreach ($subscription->links as $link) {
-            if ($link->rel == 'approve') {
-                return $link->href;
-            }
-        }
-    }
-
-    public function paypalSuccess(Request $request)
-    {
-        dd($request->all());
-    }
-
-    public function planDetails($id)
-    {
-        $plan = Http::withHeaders(
-            [
-                "Accept" => "application/json",
-                "Authorization" => $this->getToken(),
-                "Content-Type" => "application/json",
-            ])->get(env('PAYPAL_MODE') . "/v1/billing/plans/$id");
-
-        return json_decode($plan);
-    }
-
-    public function subscriptionDetails($agreementId)
-    {
-        $subscriptionDetails = Http::withHeaders(
-            [
-                "Accept" => "application/json",
-                "Authorization" => $this->getToken(),
-                "Content-Type" => "application/json",
-            ])->get(env('PAYPAL_MODE') . '/v1/billing/subscriptions/' . $agreementId);
-
-        return json_decode($subscriptionDetails);
-    }
+//    public function productsList()
+//    {
+//        $list = Http::withHeaders(
+//            ['Content-Type' => 'application/json', 'Authorization' => $this->getToken()]
+//        )->get(env('PAYPAL_MODE') . '/v1/catalogs/products');
+//
+//        $productsList = json_decode($list);
+//        dd($productsList);
+//    }
+//
+//    public function plansList()
+//    {
+//        $list = Http::withHeaders(
+//            ['Content-Type' => 'application/json', 'Authorization' => $this->getToken()]
+//        )->get(env('PAYPAL_MODE') . '/v1/billing/plans?status=ACTIVE');
+//
+//        dd(json_decode($list));
+//    }
+//
+//    public function subscribeNow(Request $request)
+//    {
+//        $package = Package::find($request->package_id);
+//        $subscription = $this->subscription($package->paypal_plan_id, env('APP_URL') . '/process-subscription?success=true&package_id=' . $package->id, env('APP_URL'));
+//        try {
+//            $link = $this->getApprovalLink($subscription);
+//            try {
+//                $agreement = new PaypalAgreement();
+//                $agreement->new_client_id = session('c_email.id');
+//                $agreement->package_id = $package->id;
+//                $agreement->agreement_id = $subscription->id;
+//                $agreement->save();
+//            } catch (\Exception $ex) {
+//
+//            }
+////            return redirect($link);
+//        } catch (\Exception $ex) {
+//
+//        }
+//        return redirect($link);
+//    }
+//
+//    public function subscription($planId, $successURL, $cancelURL)
+//    {
+//        $subscription = Http::withHeaders([
+//            "Authorization" => $this->getToken(),
+//            "Content-Type" => "application/json",
+//        ])->post(env('PAYPAL_MODE') . '/v1/billing/subscriptions',
+//            array(
+//                'plan_id' => $planId,
+//                'start_time' => Carbon::now()->addSeconds(60),
+////                'start_time' => Carbon::now()->subDay()->toDateTimeString(),
+//                'quantity' => '1',
+//                'shipping_amount' =>
+//                    array(
+//                        'currency_code' => 'USD',
+//                        'value' => '0',
+//                    ),
+//                'subscriber' =>
+//                    array(
+//                        'name' =>
+//                            array(
+//                                'given_name' => 'John',
+//                                'surname' => 'Doe',
+//                            ),
+//                        'email_address' => 'customer@example.com',
+//                        'shipping_address' =>
+//                            array(
+//                                'name' =>
+//                                    array(
+//                                        'full_name' => 'John Doe',
+//                                    ),
+//                                'address' =>
+//                                    array(
+//                                        'address_line_1' => '2211 N First Street',
+//                                        'address_line_2' => 'Building 17',
+//                                        'admin_area_2' => 'San Jose',
+//                                        'admin_area_1' => 'CA',
+//                                        'postal_code' => '95131',
+//                                        'country_code' => 'US',
+//                                    ),
+//                            ),
+//                    ),
+//                'application_context' =>
+//                    array(
+//                        'brand_name' => 'Mymotivz',
+//                        'locale' => 'en-US',
+//                        'shipping_preference' => 'SET_PROVIDED_ADDRESS',
+//                        'user_action' => 'SUBSCRIBE_NOW',
+//                        'payment_method' =>
+//                            array(
+//                                'payer_selected' => 'PAYPAL',
+//                                'payee_preferred' => 'IMMEDIATE_PAYMENT_REQUIRED',
+//                            ),
+//                        'return_url' => $successURL,
+//                        'cancel_url' => $cancelURL,
+//                    ),
+//            )
+//        );
+//        return json_decode($subscription);
+//    }
+//
+//    public function getApprovalLink($subscription)
+//    {
+//        foreach ($subscription->links as $link) {
+//            if ($link->rel == 'approve') {
+//                return $link->href;
+//            }
+//        }
+//    }
+//
+//    public function paypalSuccess(Request $request)
+//    {
+//        dd($request->all());
+//    }
+//
+//    public function planDetails($id)
+//    {
+//        $plan = Http::withHeaders(
+//            [
+//                "Accept" => "application/json",
+//                "Authorization" => $this->getToken(),
+//                "Content-Type" => "application/json",
+//            ])->get(env('PAYPAL_MODE') . "/v1/billing/plans/$id");
+//
+//        return json_decode($plan);
+//    }
+//
+//    public function subscriptionDetails($agreementId)
+//    {
+//        $subscriptionDetails = Http::withHeaders(
+//            [
+//                "Accept" => "application/json",
+//                "Authorization" => $this->getToken(),
+//                "Content-Type" => "application/json",
+//            ])->get(env('PAYPAL_MODE') . '/v1/billing/subscriptions/' . $agreementId);
+//
+//        return json_decode($subscriptionDetails);
+//    }
 }

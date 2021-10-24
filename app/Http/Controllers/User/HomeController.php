@@ -14,6 +14,7 @@ use App\Mail\SendJobApplyEmailVerifyCode;
 use App\Candidate;
 use App\Models\PayPal\Package;
 use App\Models\PayPal\PaypalAgreement;
+use App\Models\PayPal\Plan;
 use App\NewCandidate;
 use App\candidate_resume;
 use App\NewClient;
@@ -2147,8 +2148,10 @@ class HomeController extends Controller
 
     public function pricingPlans()
     {
-        $package_ids = Package::all()->pluck('id');
-        return view('user.pricing_plan', compact('package_ids'));
+        $plans = Plan::where('status','ACTIVE')->get();
+//        dd($plans->toArray());
+//        $package_ids = Package::all()->pluck('id');
+        return view('user.pricing_plan', compact('plans'));
     }
 
     public function paymentDetails($id)

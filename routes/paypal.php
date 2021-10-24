@@ -4,6 +4,9 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PaypalWebhookController;
 
 Route::get('/paypal/token',[\App\Http\Controllers\PaypalController::class, 'getToken']);
+Route::get('/paypal/create-product',[\App\Http\Controllers\PaypalController::class, 'createProduct']);
+Route::get('/paypal/create-plan',[\App\Http\Controllers\PaypalController::class, 'createPlan']);
+
 Route::get('/paypal/create-package',[\App\Http\Controllers\PaypalController::class, 'createPackage']);
 Route::get('/paypal/products-list',[\App\Http\Controllers\PaypalController::class, 'productsList']);
 Route::get('/paypal/plans-list',[\App\Http\Controllers\PaypalController::class, 'plansList']);

@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\PayPal\Payment;
 use App\Models\PayPal\Paypal;
 use App\Models\PayPal\PaypalAgreement;
+use App\Models\PayPal\Plan;
+use App\Models\PayPal\Product;
 use App\NewClient;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -74,6 +76,31 @@ class PaypalWebhookController extends Controller
                 $paymentSystemID = $requestBodyDecode->id;
                 $eventType = $requestBodyDecode->event_type;
                 try {
+
+                    if($eventType == "CATALOG.PRODUCT.CREATED"){
+                        $product = new Product();
+                        $product->product_id = $requestBodyDecode->resource->id;
+                        $product->name = $requestBodyDecode->resource->name;
+                        $product->description = $requestBodyDecode->resource->description;
+                        $product->type = $requestBodyDecode->resource->type;
+                        $product->category = $requestBodyDecode->resource->category;
+                        $product->save();
+                    }
+                    if($eventType == "BILLING.PLAN.CREATED"){
+                        $plan = new Plan();
+                        $plan->product_id = 1;
+                        $plan->plan_id = $requestBodyDecode->resource->id;
+                        $plan->name = $requestBodyDecode->resource->name;
+                        $plan->description = $requestBodyDecode->resource->description;
+                        $plan->status = $requestBodyDecode->resource->status;
+                        $plan->tenure_type = $requestBodyDecode->resource->billing_cycles[0]->tenure_type;
+                        $plan->currency = $requestBodyDecode->resource->billing_cycles[0]->pricing_scheme->fixed_price->currency_code;
+                        $plan->price = $requestBodyDecode->resource->billing_cycles[0]->pricing_scheme->fixed_price->value;
+                        $plan->quantity = 8;
+                        $plan->time = 'week';
+                        $plan->save();
+                    }
+
                     if ($eventType == "BILLING.SUBSCRIPTION.ACTIVATED") {
                         $billingAgreement = PaypalAgreement::where('agreement_id', $requestBodyDecode->resource->id)->first();
                         $user = NewClient::find($billingAgreement->new_client_id);
