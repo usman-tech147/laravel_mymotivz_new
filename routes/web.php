@@ -32,7 +32,7 @@ Route::get('/', [HomeController::class, 'welcome'])->name('welcome');
 Route::get('/employer/home', [HomeController::class, 'employerWelcome'])->name('employer.welcome');
 
 Route::get('/pricing-plan',[HomeController::class, 'pricingPlans'])->name('pricing.details');
-Route::get('/payment-details/{id}', [HomeController::class, 'paymentDetails'])
+Route::get('/payment-details/{plan}', [HomeController::class, 'paymentDetails'])
     ->name('payment.details')->middleware('paymentDetails');
 
 //Route::get('/change/{slug}', [HomeController::class, 'change'])->name('change');

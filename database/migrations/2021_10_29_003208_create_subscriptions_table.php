@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreatePaypalAgreementsTable extends Migration
+class CreateSubscriptionsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,20 +13,23 @@ class CreatePaypalAgreementsTable extends Migration
      */
     public function up()
     {
-        Schema::create('paypal_agreements', function (Blueprint $table) {
+        Schema::create('subscriptions', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('new_client_id');
             $table->unsignedBigInteger('plan_id');
-            $table->string('agreement_id')->unique();
+            $table->string('status');
+            $table->string('payment_id');
+            $table->timestamp('start_date');
+            $table->timestamp('end_date');
 
             $table->foreign('new_client_id')
                 ->references('id')
-                ->on('new_clients')
-                ->onDelete('restrict');
+                ->on('new_clients');
+
             $table->foreign('plan_id')
                 ->references('id')
-                ->on('plans')
-                ->onDelete('restrict');
+                ->on('plans');
+
             $table->timestamps();
         });
     }
@@ -38,6 +41,6 @@ class CreatePaypalAgreementsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('paypal_agreements');
+        Schema::dropIfExists('subscriptions');
     }
 }

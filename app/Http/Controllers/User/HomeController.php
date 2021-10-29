@@ -2154,7 +2154,7 @@ class HomeController extends Controller
         return view('user.pricing_plan', compact('plans'));
     }
 
-    public function paymentDetails($id)
+    public function paymentDetails(Plan $plan)
     {
         $user = new NewClient();
 //        $billingAgreement = PayPalAgreement::where('agreement_id', 'I-J8C1KJU684JU')->first();
@@ -2162,7 +2162,7 @@ class HomeController extends Controller
 //        $userPackage = $user->packages->where('pivot.billing_agreement_id', 'I-J8C1KJU684JU')->first();
 //
 //        dd($userPackage->pivot->renewal_status);
-        return view('user.payment_details', compact('id'));
+        return view('user.payment_details', compact('plan'));
     }
 //    public function upload_image_cke(Request $request)
 //    {

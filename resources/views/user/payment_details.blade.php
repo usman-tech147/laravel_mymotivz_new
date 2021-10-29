@@ -16,7 +16,7 @@
                             <section>
                                 <form action="{{route('subscribe-now')}}" method="post">
                                     @csrf
-                                    <input type="hidden" name="package_id" value="{{$id}}">
+                                    <input type="hidden" name="plan" value="{{$plan->id}}">
                                     <div class="col-md-6" style="text-align: center;">
                                         <label style="margin: 0px 0px 25px">Paypal: </label>
                                         <button style="background: transparent" id="checkout-button-paypal">

@@ -24,12 +24,14 @@ class CreatePlansTable extends Migration
             $table->string('currency');
             $table->string('price');
             $table->string('quantity');
+            $table->string('interval_unit');
+            $table->string('interval_count');
 
             $table->foreign('product_id')
                 ->references('id')
                 ->on('products')
-                ->onDelete('restrict')
-                ->onUpdate('restrict');
+                ->onDelete('cascade')
+                ->onUpdate('cascade');
             $table->timestamps();
         });
     }

@@ -7,6 +7,7 @@ use App\Models\PayPal\Paypal;
 use App\Models\PayPal\PaypalAgreement;
 use App\Models\PayPal\Plan;
 use App\Models\PayPal\Product;
+use App\Models\PayPal\Subscription;
 use App\NewClient;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -76,7 +77,6 @@ class PaypalWebhookController extends Controller
                 $paymentSystemID = $requestBodyDecode->id;
                 $eventType = $requestBodyDecode->event_type;
                 try {
-
                     if($eventType == "CATALOG.PRODUCT.CREATED"){
                         $product = new Product();
                         $product->product_id = $requestBodyDecode->resource->id;
@@ -96,60 +96,70 @@ class PaypalWebhookController extends Controller
                         $plan->tenure_type = $requestBodyDecode->resource->billing_cycles[0]->tenure_type;
                         $plan->currency = $requestBodyDecode->resource->billing_cycles[0]->pricing_scheme->fixed_price->currency_code;
                         $plan->price = $requestBodyDecode->resource->billing_cycles[0]->pricing_scheme->fixed_price->value;
-                        $plan->quantity = 8;
-                        $plan->time = 'week';
+                        $plan->quantity = 60;
+                        $plan->interval_unit = $requestBodyDecode->resource->billing_cycles[0]->frequency->interval_unit;
+                        $plan->interval_count = $requestBodyDecode->resource->billing_cycles[0]->frequency->interval_count;
                         $plan->save();
                     }
-
-                    if ($eventType == "BILLING.SUBSCRIPTION.ACTIVATED") {
-                        $billingAgreement = PaypalAgreement::where('agreement_id', $requestBodyDecode->resource->id)->first();
-                        $user = NewClient::find($billingAgreement->new_client_id);
-//                        ManualSubscriptionRequest::where('user_id', $billingAgreement->user_id)->where('package_id', $billingAgreement->package_id)->delete();
-                        $subscribed_at = new Carbon($requestBodyDecode->resource->billing_info->last_payment->time);
-                        $expired_at = new Carbon($requestBodyDecode->resource->billing_info->next_billing_time);
-                        $plan = $paypalController->planDetails($requestBodyDecode->resource->plan_id);
-                        try {
-                            $user->packages()->attach($billingAgreement->package_id,
-                                [
-                                    'subscribed_at' => $subscribed_at,
-                                    'expired_at' => $expired_at,
-                                    'subscribed_status' => ucwords(strtolower($requestBodyDecode->resource->status)),
-                                    'renewal_status' => true,
-                                    'billing_agreement_id' => $requestBodyDecode->resource->id,
-                                    'username' => sha1(uniqid() . time() . date('d-m-y')),
-                                    'password' => '$2y$10$b19UQbpdgen.vWs8NzK0a.CFjrH.2jVcEgMhBt7pN6drd1aN3hkC6',
-                                    'created_at' => new \DateTime(),
-                                    'updated_at' => new \DateTime(),
-                                    'payment_by' => 'PayPal',
-                                    'error_message' => 'Waiting for Payment to complete.',
-                                    'frequency' => $plan->billing_cycles[0]->frequency->interval_unit,
-                                    'interval_count' => $plan->billing_cycles[0]->frequency->interval_count,
-                                ]);
-                        }
-                        catch (\Exception $ex) {
-                            $subPackage = $user->packages->where('id', $billingAgreement->package_id)->first()->pivot;
-
-                            if ($subPackage->subscribed_status == 'Expired') {
-                                $subPackage->error_message = 'Waiting for Payment to complete.';
-                            }
-
-                            $subPackage->subscribed_status = ucwords(strtolower($requestBodyDecode->resource->status));
-                            $subPackage->billing_agreement_id = $requestBodyDecode->resource->id;
-                            $subPackage->frequency = $plan->billing_cycles[0]->frequency->interval_unit;
-                            $subPackage->interval_count = $plan->billing_cycles[0]->frequency->interval_count;
-                            $subPackage->payment_by = 'PayPal';
-                            $subPackage->subscribed_at = $subscribed_at;
-                            $subPackage->expired_at = $expired_at;
-                            $subPackage->subscription_id = null;
-                            if (ucwords(strtolower($requestBodyDecode->resource->status)) == 'Active') {
-                                $subPackage->renewal_status = true;
-                            } else {
-                                $subPackage->renewal_status = false;
-                            }
-                            $subPackage->updated_at = Carbon::now();
-                            $subPackage->save();
-                        }
+                    if($eventType == "BILLING.SUBSCRIPTION.ACTIVATED") {
+                        $subscriptionDetails = $paypalController->subscriptionDetails($requestBodyDecode->resource->id);
+                        $paypalAgreement = PaypalAgreement::where('agreement_id',$requestBodyDecode->resource->id)->first();
+                        $subscription = new Subscription();
+                        $subscription->new_client_id = $paypalAgreement->new_client_id;
+                        $subscription->plan_id = $paypalAgreement->plan_id;
+                        $subscription->status = ucwords(strtolower($requestBodyDecode->resource->status));
+                        $subscription->payment_id = 'plan_id'.'--'.$requestBodyDecode->resource->plan_id;
+                        $subscription->start_date = now();
+                        $subscription->end_date = $requestBodyDecode->resource->billing_info->next_billing_time;
                     }
+//                    if ($eventType == "BILLING.SUBSCRIPTION.ACTIVATED") {
+//                        $billingAgreement = PaypalAgreement::where('agreement_id', $requestBodyDecode->resource->id)->first();
+//                        $user = NewClient::find($billingAgreement->new_client_id);
+//                        $subscribed_at = new Carbon($requestBodyDecode->resource->billing_info->last_payment->time);
+//                        $expired_at = new Carbon($requestBodyDecode->resource->billing_info->next_billing_time);
+//                        $plan = $paypalController->planDetails($requestBodyDecode->resource->plan_id);
+//                        try {
+//                            $user->packages()->attach($billingAgreement->package_id,
+//                                [
+//                                    'subscribed_at' => $subscribed_at,
+//                                    'expired_at' => $expired_at,
+//                                    'subscribed_status' => ucwords(strtolower($requestBodyDecode->resource->status)),
+//                                    'renewal_status' => true,
+//                                    'billing_agreement_id' => $requestBodyDecode->resource->id,
+//                                    'username' => sha1(uniqid() . time() . date('d-m-y')),
+//                                    'password' => '$2y$10$b19UQbpdgen.vWs8NzK0a.CFjrH.2jVcEgMhBt7pN6drd1aN3hkC6',
+//                                    'created_at' => new \DateTime(),
+//                                    'updated_at' => new \DateTime(),
+//                                    'payment_by' => 'PayPal',
+//                                    'error_message' => 'Waiting for Payment to complete.',
+//                                    'frequency' => $plan->billing_cycles[0]->frequency->interval_unit,
+//                                    'interval_count' => $plan->billing_cycles[0]->frequency->interval_count,
+//                                ]);
+//                        }
+//                        catch (\Exception $ex) {
+//                            $subPackage = $user->packages->where('id', $billingAgreement->package_id)->first()->pivot;
+//
+//                            if ($subPackage->subscribed_status == 'Expired') {
+//                                $subPackage->error_message = 'Waiting for Payment to complete.';
+//                            }
+//
+//                            $subPackage->subscribed_status = ucwords(strtolower($requestBodyDecode->resource->status));
+//                            $subPackage->billing_agreement_id = $requestBodyDecode->resource->id;
+//                            $subPackage->frequency = $plan->billing_cycles[0]->frequency->interval_unit;
+//                            $subPackage->interval_count = $plan->billing_cycles[0]->frequency->interval_count;
+//                            $subPackage->payment_by = 'PayPal';
+//                            $subPackage->subscribed_at = $subscribed_at;
+//                            $subPackage->expired_at = $expired_at;
+//                            $subPackage->subscription_id = null;
+//                            if (ucwords(strtolower($requestBodyDecode->resource->status)) == 'Active') {
+//                                $subPackage->renewal_status = true;
+//                            } else {
+//                                $subPackage->renewal_status = false;
+//                            }
+//                            $subPackage->updated_at = Carbon::now();
+//                            $subPackage->save();
+//                        }
+//                    }
                     if ($eventType == "PAYMENT.SALE.COMPLETED") {
                         $billingAgreement = PayPalAgreement::where('agreement_id', $requestBodyDecode->resource->billing_agreement_id)->first();
                         $payment = Payment::create([
@@ -160,30 +170,30 @@ class PaypalWebhookController extends Controller
                             'package_id' => $billingAgreement->package_id,
                             'payment_by' => 'Paypal'
                         ]);
-                        $agreement = $paypalController->subscriptionDetails($requestBodyDecode->resource->billing_agreement_id);
-                        $plan = $paypalController->planDetails($agreement->plan_id);
-                        $user = NewClient::find($billingAgreement->new_client_id);
-                        $userPackage = $user->packages->where('pivot.billing_agreement_id', $requestBodyDecode->resource->billing_agreement_id)->first();
-                        $userPackage->pivot->subscribed_status = ucwords(strtolower($agreement->status));
-                        $userPackage->pivot->frequency = $plan->billing_cycles[0]->frequency->interval_unit;
-                        $userPackage->pivot->interval_count = $plan->billing_cycles[0]->frequency->interval_count;
-                        $userPackage->pivot->payment_by = 'PayPal';
-                        $userPackage->pivot->billing_agreement_id = $requestBodyDecode->resource->billing_agreement_id;
-                        $userPackage->pivot->subscription_id = null;
-                        $userPackage->pivot->error_message = null;
-                        $subscribed_at = new Carbon($agreement->billing_info->last_payment->time);
+//                        $agreement = $paypalController->subscriptionDetails($requestBodyDecode->resource->billing_agreement_id);
+//                        $plan = $paypalController->planDetails($agreement->plan_id);
+//                        $user = NewClient::find($billingAgreement->new_client_id);
+//                        $userPackage = $user->packages->where('pivot.billing_agreement_id', $requestBodyDecode->resource->billing_agreement_id)->first();
+//                        $userPackage->pivot->subscribed_status = ucwords(strtolower($agreement->status));
+//                        $userPackage->pivot->frequency = $plan->billing_cycles[0]->frequency->interval_unit;
+//                        $userPackage->pivot->interval_count = $plan->billing_cycles[0]->frequency->interval_count;
+//                        $userPackage->pivot->payment_by = 'PayPal';
+//                        $userPackage->pivot->billing_agreement_id = $requestBodyDecode->resource->billing_agreement_id;
+//                        $userPackage->pivot->subscription_id = null;
+//                        $userPackage->pivot->error_message = null;
+//                        $subscribed_at = new Carbon($agreement->billing_info->last_payment->time);
+////
+//                        $expired_at = new Carbon($agreement->billing_info->next_billing_time);
 //
-                        $expired_at = new Carbon($agreement->billing_info->next_billing_time);
-
-                        if ($subscribed_at->diffInDays($expired_at) >= 28) {
-                            $userPackage->pivot->expired_at = $expired_at;
-                        } else {
-                            $expired_at = new Carbon($subscribed_at);
-
-                            if ($plan->billing_cycles[0]->frequency->interval_unit == 'MONTH' &&
-                                $plan->billing_cycles[0]->frequency->interval_count == 1) {
-                                $expired_at = $expired_at->addMonths(1);
-                            }
+//                        if ($subscribed_at->diffInDays($expired_at) >= 28) {
+//                            $userPackage->pivot->expired_at = $expired_at;
+//                        } else {
+//                            $expired_at = new Carbon($subscribed_at);
+//
+//                            if ($plan->billing_cycles[0]->frequency->interval_unit == 'MONTH' &&
+//                                $plan->billing_cycles[0]->frequency->interval_count == 1) {
+//                                $expired_at = $expired_at->addMonths(1);
+//                            }
 //                            if ($plan->billing_cycles[0]->frequency->interval_unit == 'MONTH' &&
 //                                $plan->billing_cycles[0]->frequency->interval_count == 6) {
 //                                $expired_at = $expired_at->addMonths(6);
@@ -192,42 +202,39 @@ class PaypalWebhookController extends Controller
 //                                $plan->billing_cycles[0]->frequency->interval_count == 1) {
 //                                $expired_at = $expired_at->addYear();
 //                            }
-                            $userPackage->pivot->expired_at = $expired_at;
-                        }
-
-                        if ($agreement->status == 'ACTIVE') {
-                            $userPackage->pivot->renewal_status = true;
-
-                        } else {
-                            $userPackage->pivot->renewal_status = false;
-
-                        }
-                        $userPackage->pivot->subscribed_at = $subscribed_at;
-                        $userPackage->pivot->save();
+//                            $userPackage->pivot->expired_at = $expired_at;
+//                        }
+//                        if ($agreement->status == 'ACTIVE') {
+//                            $userPackage->pivot->renewal_status = true;
+//                        } else {
+//                            $userPackage->pivot->renewal_status = false;
+//                        }
+//                        $userPackage->pivot->subscribed_at = $subscribed_at;
+//                        $userPackage->pivot->save();
                     }
-                    if ($eventType == "BILLING.SUBSCRIPTION.SUSPENDED") {
-                        $billingAgreement = PayPalAgreement::where('agreement_id', $requestBodyDecode->resource->id)->first();
-                        $user = NewClient::find($billingAgreement->new_client_id);
-                        $userPackage = $user->packages->where('pivot.billing_agreement_id', $requestBodyDecode->resource->id)->first();
-                        $userPackage->pivot->subscribed_status = ucwords(strtolower($requestBodyDecode->resource->status));
-                        if ($userPackage->pivot->renewal_status == '1') {
-                            $userPackage->pivot->renewal_status = false;
-                        }
-                        $userPackage->pivot->save();
-                    }
-                    if ($eventType == 'BILLING.SUBSCRIPTION.CANCELLED') {
-                        $billingAgreement = PayPalAgreement::where('agreement_id', $requestBodyDecode->resource->id)->first();
-                        $user = NewClient::find($billingAgreement->new_client_id);
-                        $userPackage = $user->packages->where('pivot.billing_agreement_id', $requestBodyDecode->resource->id)->first();
-                        if (empty($userPackage)) {
-                            exit(1);
-                        }
-                        $userPackage->pivot->subscribed_status = ucwords(strtolower($requestBodyDecode->resource->status));
-                        if ($userPackage->pivot->renewal_status == '1') {
-                            $userPackage->pivot->renewal_status = false;
-                        }
-                        $userPackage->pivot->save();
-                    }
+//                    if ($eventType == "BILLING.SUBSCRIPTION.SUSPENDED") {
+//                        $billingAgreement = PayPalAgreement::where('agreement_id', $requestBodyDecode->resource->id)->first();
+//                        $user = NewClient::find($billingAgreement->new_client_id);
+//                        $userPackage = $user->packages->where('pivot.billing_agreement_id', $requestBodyDecode->resource->id)->first();
+//                        $userPackage->pivot->subscribed_status = ucwords(strtolower($requestBodyDecode->resource->status));
+//                        if ($userPackage->pivot->renewal_status == '1') {
+//                            $userPackage->pivot->renewal_status = false;
+//                        }
+//                        $userPackage->pivot->save();
+//                    }
+//                    if ($eventType == 'BILLING.SUBSCRIPTION.CANCELLED') {
+//                        $billingAgreement = PayPalAgreement::where('agreement_id', $requestBodyDecode->resource->id)->first();
+//                        $user = NewClient::find($billingAgreement->new_client_id);
+//                        $userPackage = $user->packages->where('pivot.billing_agreement_id', $requestBodyDecode->resource->id)->first();
+//                        if (empty($userPackage)) {
+//                            exit(1);
+//                        }
+//                        $userPackage->pivot->subscribed_status = ucwords(strtolower($requestBodyDecode->resource->status));
+//                        if ($userPackage->pivot->renewal_status == '1') {
+//                            $userPackage->pivot->renewal_status = false;
+//                        }
+//                        $userPackage->pivot->save();
+//                    }
 
                 } catch (\Exception $ex) {
                     $paypal->exception = $ex->getMessage();
